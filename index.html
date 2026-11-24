@@ -151,6 +151,8 @@ input[type=time]{min-height:44px;border:1px solid var(--line);background:var(--b
 .sw span{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--c) 50%,var(--d) 50%);flex:none}.sw button.on{outline:2px solid var(--ink);outline-offset:1px}
 textarea{width:100%;margin:10px 0;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:10px;font:14px/1.4 inherit;resize:vertical}
 .tabs{overflow-x:auto;scrollbar-width:none}.tabs button{flex:none}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:6px 0 10px}.cmp div{background:var(--bg);border-radius:14px;padding:10px;display:grid}.cmp small,.cmp span{color:var(--mut);font-size:13px}.cmp b{font-family:Unbounded,sans-serif;font-size:clamp(17px,2.6vw,22px)}
+.stp{display:flex;flex-wrap:wrap;gap:6px}.stp div{border:1px solid var(--line);border-radius:12px;padding:6px 10px;display:grid}.stp small{color:var(--mut);font-size:12px}.stp .on{background:var(--red);color:#fff;border-color:var(--red)}.stp .on small{color:#fff}
 @media(max-width:600px){.hero{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}.date{justify-content:center}.week{margin:0 auto}.tabs button{padding:10px 12px}}
 </style>
 </head>
@@ -274,7 +276,7 @@ function renderToday(){
     ${ex.length&&stageOf(cur)<2?'<p class="muted" style="margin-top:12px">Тяжело — сделай меньше, но отметь. Сейчас главное не рекорды, а привычка заниматься.</p>':''}
   </div>
   <div class="card"><h3>Питание <span>${mDone} / ${S.plan.meals.length}</span></h3>
-    ${n?`<p class="muted" style="margin:-4px 0 6px">Норма: ${fmtN(n.kcal)} ккал · ${n.prot} г белка</p>`:''}
+    ${n?`<p class="muted" style="margin:-4px 0 6px">Норма${n.kcal!==n.goalK?' на эту неделю':''}: ${fmtN(n.kcal)} ккал · ${n.prot} г белка</p>`:''}
     ${S.plan.meals.map(e=>item('m',e,l.m[e.id],mt[e.id]||'',n?`≈${fmtN(Math.round(n.kcal*sh[e.id]/10)*10)} ккал · ${plate(n,sh[e.id])}`:e.d)).join('')||'<p class="rest">Добавь приёмы пищи во вкладке «План»</p>'}
     <h3 style="margin-top:18px">Вода <span>${l.w} / ${S.plan.water} стаканов</span></h3>
     <div class="water">${w}</div>
@@ -405,18 +407,29 @@ const tm=s=>{const[a,b]=String(s||'0:0').split(':').map(Number);return(a||0)*60+
 const hm=m=>{m=((Math.round(m/5)*5)%1440+1440)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
 const fmtN=v=>Number(v).toLocaleString('ru-RU');
 const lastKg=()=>{const ks=Object.keys(S.log).sort().reverse();for(const k of ks){const v=parseFloat(S.log[k].kg);if(v>0)return v}return null};
+function curIntake(){const p=S.prof;if(!p)return null;
+  if(+p.ck>0)return{v:+p.ck,src:'со слов'};
+  if(!p.ps)return null;
+  const per={s:400,m:600,l:850,x:1100}[p.ps]||600,ms=S.plan.meals,sh=mealShares();
+  let v=0;ms.forEach(e=>{v+=sh[e.id]<.15?200:per});v+={no:0,some:150,day:400}[p.jf]||0;
+  return{v:Math.round(v/50)*50,src:'оценка по порциям'}}
 function NUT(){
   const p=S.prof;if(!p||!(p.w>0&&p.h>0&&p.age>0))return null;
   const w=lastKg()||+p.w,h=+p.h,a=+p.age,m=p.sex!=='f';
   const bmi=w/((h/100)**2),bmr=10*w+6.25*h-5*a+(m?5:-161);
   const tdee=bmr*({sit:1.375,feet:1.55,hard:1.7}[p.act]||1.375);
-  let kcal=p.goal==='lose'?tdee*0.85:p.goal==='gain'?tdee*1.1:tdee;
-  kcal=Math.round(Math.max(kcal,m?1500:1200)/50)*50;
+  let goalK=p.goal==='lose'?tdee*0.85:p.goal==='gain'?tdee*1.1:tdee;
+  goalK=Math.round(Math.max(goalK,m?1500:1200)/50)*50;
+  const cur=curIntake(),steps=[];let kcal=goalK;
+  if(cur){const STEP=cur.v>goalK?250:200,gap=goalK-cur.v;
+    if(Math.abs(gap)>STEP){let v=cur.v;while(Math.abs(goalK-v)>STEP){v+=Math.sign(gap)*STEP;steps.push(Math.round(v/50)*50)}steps.push(goalK);
+      const wk=p.at?Math.max(0,Math.floor((parse(TODAY())-parse(p.at))/864e5/7)):0;kcal=steps[Math.min(wk,steps.length-1)]}}
   const base=bmi>=30?25*(h/100)**2:w;
   const prot=Math.round(base*(p.goal==='keep'?1.6:1.8)),fat=Math.round(base*0.9);
   const carb=Math.max(0,Math.round((kcal-prot*4-fat*9)/4));
   const water=Math.max(6,Math.min(14,Math.round(w*30/250)));
-  return{w,bmi,bmr:Math.round(bmr),tdee:Math.round(tdee/50)*50,kcal,prot,fat,carb,water};
+  const wk=p.at?Math.max(0,Math.floor((parse(TODAY())-parse(p.at))/864e5/7)):0;
+  return{w,bmi,bmr:Math.round(bmr),tdee:Math.round(tdee/50)*50,kcal,goalK,cur,steps,wk,prot,fat,carb,water};
 }
 const SHARE={'Завтрак':.25,'Обед':.35,'Перекус':.1,'Ужин':.3};
 const MSETS={2:[['Завтрак',.45,'плотный: белок + каша'],['Ужин',.55,'мясо/рыба + гарнир + овощи']],
@@ -494,13 +507,23 @@ function renderMe(){
     <label>Работа / учёба с<input type="time" name="ws" value="${esc(p.ws||'09:00')}"></label><label>до<input type="time" name="we" value="${esc(p.we||'18:00')}"></label></div>
     <label>Рабочие дни<select name="wd">${o('wd',[['wk','Пн–Пт'],['all','Каждый день'],['none','Не работаю / свободный график']])}</select></label>
     <label>Сколько раз в день ешь<select name="meals">${[2,3,4,5,6].map(v=>`<option value="${v}"${S.plan.meals.length===v?' selected':''}>${v} ${v<5?'раза':'раз'}</option>`).join('')}${S.plan.meals.length<2||S.plan.meals.length>6?`<option selected value="">${S.plan.meals.length} (свой список)</option>`:''}</select></label>
+    <h3 style="margin-top:18px">Сколько ешь сейчас</h3>
+    <label>Калорий в день сейчас<input type="number" name="ck" min="800" max="8000" step="50" placeholder="если знаешь, например 2800" value="${esc(p.ck||'')}"></label>
+    <p class="muted" style="margin:6px 0 0">Не знаешь — оставь пустым и ответь на два вопроса ниже, прикину сам.</p>
+    <div class="fg"><label>Обычные порции<select name="ps"><option value="">Не указывать</option>${o('ps',[['s','Маленькие'],['m','Средние, обычная тарелка'],['l','Большие, с добавкой'],['x','Очень большие']])}</select></label>
+    <label>Сладкое, фастфуд, сладкие напитки<select name="jf">${o('jf',[['no','Редко'],['some','Пару раз в неделю'],['day','Каждый день']])}</select></label></div>
     <label>Когда удобно тренироваться<select name="wt">${o('wt',[['after','После работы'],['morning','Утром'],['evening','Вечером']])}</select></label>
     <button class="btn" style="margin-top:16px;width:100%">Сохранить и пересчитать</button>
   </form>
   <div class="card">${n?`<h3>Твоя норма в день</h3>
-    <div class="kp"><div><span class="num">${fmtN(n.kcal)}</span><small>ккал</small></div><div><span class="num">${n.prot} г</span><small>белка</small></div><div><span class="num">${n.fat} г</span><small>жиров</small></div><div><span class="num">${n.carb} г</span><small>углеводов</small></div></div>
+    <div class="kp"><div><span class="num">${fmtN(n.kcal)}</span><small>ккал${n.kcal!==n.goalK?' на эту неделю':''}</small></div><div><span class="num">${n.prot} г</span><small>белка</small></div><div><span class="num">${n.fat} г</span><small>жиров</small></div><div><span class="num">${n.carb} г</span><small>углеводов</small></div></div>
     <p>Вода: <b>${n.water} стаканов</b> (≈${String((n.water*.25).toFixed(1)).replace('.',',')} л). Расчёт по весу ${String(n.w).replace('.',',')} кг.</p>
     <p class="muted">ИМТ ${n.bmi.toFixed(1).replace('.',',')} — ${cat}. Обмен в покое ≈ ${fmtN(n.bmr)} ккал, с дневной активностью ≈ ${fmtN(n.tdee)} ккал. ${p.goal==='lose'?'Минус 15% — примерно 0,3–0,5 кг в неделю без голода.':p.goal==='gain'?'Плюс 10% и силовые — набор мышц без лишнего жира.':'Калории на уровне расхода.'}</p>
+    ${n.cur?(()=>{const c=n.cur.v,d=c-n.tdee,kgm=Math.abs(d)*30/7700;
+      return `<h3 style="margin-top:18px">Сейчас и цель</h3>
+      <div class="cmp"><div><small>Ешь сейчас</small><b>${fmtN(c)}</b><span>${n.cur.src}</span></div><div><small>Тратишь</small><b>${fmtN(n.tdee)}</b><span>с активностью</span></div><div><small>Цель</small><b>${fmtN(n.goalK)}</b><span>${p.goal==='lose'?'похудение':p.goal==='gain'?'набор':'поддержание'}</span></div></div>
+      <p>${Math.abs(d)<150?'Сейчас ты ешь примерно столько, сколько тратишь, — вес стоит на месте.':d>0?`Сейчас ты ешь на <b>${fmtN(Math.round(d/50)*50)} ккал больше</b>, чем тратишь. Если ничего не менять — это примерно <b>+${kgm.toFixed(1).replace('.',',')} кг в месяц</b>.`:`Сейчас ты ешь на <b>${fmtN(Math.round(-d/50)*50)} ккал меньше</b>, чем тратишь — это примерно −${kgm.toFixed(1).replace('.',',')} кг в месяц.${c<n.bmr?' Это даже меньше обмена в покое: так тяжело тренироваться и легко сорваться.':''}`}</p>
+      ${n.steps.length>1?`<p class="muted" style="margin-bottom:6px">Переходим плавно, чтобы не было голода и срывов:</p><div class="stp">${n.steps.map((v,i)=>`<div class="${i===Math.min(n.wk,n.steps.length-1)?'on':''}"><small>Неделя ${i+1}${i===n.steps.length-1?'+':''}</small><b>${fmtN(v)}</b></div>`).join('')}</div>`:'<p class="muted">Разница небольшая — можно сразу переходить на норму.</p>'}`})():`<p class="muted" style="margin-top:14px">Укажи слева, сколько ешь сейчас — покажу разницу с нормой и план плавного перехода.</p>`}
     <h3 style="margin-top:18px">Сколько класть в тарелку</h3>
     ${S.plan.meals.map(e=>`<div class="pl"><span class="t"><b>${esc(e.n)}</b> · ≈${fmtN(Math.round(n.kcal*sh[e.id]/10)*10)} ккал<br><span class="muted">${esc(plate(n,sh[e.id],true))}</span></span></div>`).join('')}
     <p class="muted">Ладонь ≈ 100–120 г готового мяса, рыбы или творога. Горсть ≈ 2–3 ложки готовой крупы или 1 картофелина. Большой палец ≈ 1 ч. л. масла или 10 г орехов.</p>
@@ -653,10 +676,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modal').hidden
 document.addEventListener('submit',e=>{
   const f=e.target;if(f.id!=='prof')return;e.preventDefault();
   const fd=Object.fromEntries(new FormData(f));
-  S.prof=Object.assign(fd,{age:+fd.age,h:+fd.h,w:+fd.w,steps:+fd.steps||8000});
+  const old=S.prof||{};
+  S.prof=Object.assign(fd,{age:+fd.age,h:+fd.h,w:+fd.w,steps:+fd.steps||8000,ck:+fd.ck||'',at:old.at});
+  if(!old.at||old.ck!==S.prof.ck||old.ps!==S.prof.ps||old.jf!==S.prof.jf||old.goal!==S.prof.goal)S.prof.at=TODAY();
   if(+fd.meals&&+fd.meals!==S.plan.meals.length)setMeals(+fd.meals);
   const sth=S.plan.habits.find(h=>/шаг/i.test(h.n));if(sth)sth.n=fmtN(S.prof.steps)+'+ шагов';
-  const tk2=TODAY();if(!(parseFloat(Lr(tk2).kg)>0))L(tk2).kg=String(fd.w);
+  const tk2=TODAY();if(parseFloat(Lr(tk2).kg)!==+fd.w)L(tk2).kg=String(fd.w);
   const n=NUT();if(n)S.plan.water=n.water;
   changed();toast('Готово: норма '+(n?fmtN(n.kcal)+' ккал, '+n.prot+' г белка, '+n.water+' стаканов воды':'пересчитана'));
 });
