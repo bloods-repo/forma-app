@@ -153,6 +153,8 @@ textarea{width:100%;margin:10px 0;border:1px solid var(--line);background:var(--
 .tabs{overflow-x:auto;scrollbar-width:none}.tabs button{flex:none}
 .cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:6px 0 10px}.cmp div{background:var(--bg);border-radius:14px;padding:10px;display:grid}.cmp small,.cmp span{color:var(--mut);font-size:13px}.cmp b{font-family:Unbounded,sans-serif;font-size:clamp(17px,2.6vw,22px)}
 .stp{display:flex;flex-wrap:wrap;gap:6px}.stp div{border:1px solid var(--line);border-radius:12px;padding:6px 10px;display:grid}.stp small{color:var(--mut);font-size:12px}.stp .on{background:var(--red);color:#fff;border-color:var(--red)}.stp .on small{color:#fff}
+.tl.tap{cursor:pointer;user-select:none}.tl.tap:hover{background:color-mix(in srgb,var(--line) 50%,transparent);border-radius:10px}
+.tc{width:22px;height:22px;border-radius:50%;border:2px solid var(--line)}
 @media(max-width:600px){.hero{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}.date{justify-content:center}.week{margin:0 auto}.tabs button{padding:10px 12px}}
 </style>
 </head>
@@ -460,8 +462,8 @@ function SCHED(k){
   let lunch=workDay?work[0]+Math.round((work[1]-work[0])/60)*30:wake+300;if(lunch<bf+180)lunch=bf+180;
   let dinner=sleep-180;if(wo!=null&&wo>lunch&&wo<sleep-120)dinner=Math.max(dinner,Math.min(wo+(strong?75:60),sleep-120));
 
-  A(wake,'Подъём, стакан воды','x');
-  if(workDay)A(work[0],'Работа / учёба до '+hm(work[1]),'x');
+  A(wake,'Подъём, стакан воды','x','wake');
+  if(workDay)A(work[0],'Работа / учёба до '+hm(work[1]),'info');
   const ms=S.plan.meals,nm=ms.length,last=nm>=6?Math.min(sleep-90,Math.max(dinner+120,sleep-120)):dinner,
     lastMain=nm>=6?nm-2:nm-1,anc={0:bf};anc[lastMain]=dinner;if(nm>=6)anc[nm-1]=last;
   const li=ms.findIndex(e=>e.n==='Обед');if(li>0&&li<lastMain)anc[li]=lunch;
@@ -469,8 +471,8 @@ function SCHED(k){
   ms.forEach((e,i)=>{let t;if(nm===1)t=lunch;else if(anc[i]!=null)t=anc[i];else{const a=ks.filter(k=>k<i).pop(),b=ks.find(k=>k>i);t=anc[a]+(anc[b]-anc[a])*(i-a)/(b-a)}
     A(t,e.n,'meal',e.id)});
   if(wo!=null)A(wo,strong?'Тренировка':ex.map(e=>e.n).join(' + '),'wo');
-  A(sleep-30,'Телефон в сторону, свет потише','x');
-  A(sleep,'Отбой','x');
+  A(sleep-30,'Телефон в сторону, свет потише','x','screen');
+  A(sleep,'Отбой','x','sleep');
   return out.sort((a,b)=>a.m-b.m);
 }
 function renderSched(){
@@ -478,12 +480,12 @@ function renderSched(){
   const items=SCHED(cur);
   if(!items.length){box.innerHTML='<p class="rest">Заполни распорядок во вкладке «Я» — здесь появится план дня по часам.</p>';bar.innerHTML='';return}
   const l=Lr(cur),ex=S.plan.days[parse(cur).getDay()]||[];
-  const isDone=it=>it.kind==='meal'?!!l.m[it.id]:it.kind==='wo'?ex.length>0&&ex.every(e=>l.x[e.id]):null;
+  const isDone=it=>it.kind==='x'?!!(l.sc&&l.sc[it.id]):it.kind==='meal'?!!l.m[it.id]:it.kind==='wo'?ex.length>0&&ex.every(e=>l.x[e.id]):null;
   const isToday=cur===TODAY(),d=new Date(),now=d.getHours()*60+d.getMinutes();
   const nextI=isToday?items.findIndex(it=>it.m>now):-1;
-  box.innerHTML=items.map((it,i)=>{const dn=isDone(it);return `<div class="tl${dn?' ok':''}${i===nextI?' nx':''}${isToday&&it.m<=now&&dn===false?' miss':''}"><span class="tt">${hm(it.m)}</span><span>${esc(it.n)}</span>${dn?'<span class="tk">✓</span>':'<span></span>'}</div>`}).join('');
+  box.innerHTML=items.map((it,i)=>{const dn=isDone(it),ck=dn!==null;return `<div class="tl${dn?' ok':''}${i===nextI?' nx':''}${isToday&&it.m<=now&&dn===false?' miss':''}${ck?' tap':''}"${ck?` role="checkbox" tabindex="0" aria-checked="${!!dn}" data-tl="${it.kind}|${esc(it.id)}"`:''}><span class="tt">${hm(it.m)}</span><span>${esc(it.n)}</span>${dn?'<span class="tk">✓</span>':ck?'<span class="tc"></span>':'<span></span>'}</div>`}).join('')+'<p class="muted" style="margin:8px 0 0">Нажми на пункт, чтобы отметить, — даже если время уже прошло.</p>';
   if(!isToday){bar.innerHTML='';return}
-  const missed=items.filter(it=>it.m<=now&&isDone(it)===false),nx=nextI>=0?items[nextI]:null;
+  const missed=items.filter(it=>(it.kind==='meal'||it.kind==='wo')&&it.m<=now&&isDone(it)===false),nx=nextI>=0?items[nextI]:null;
   bar.innerHTML=missed.length||nx?`<div class="nb" style="margin:0"><span>${missed.length?`<b>Не отмечено:</b> ${missed.map(it=>esc(it.n)+' ('+hm(it.m)+')').join(', ')}. `:''}${nx?`Дальше: <b>${esc(nx.n)}</b> в ${hm(nx.m)}${nx.m-now<=90?` — через ${nx.m-now} мин`:''}.`:''}</span></div>`:'';
 }
 setInterval(()=>{if(view==='today'&&!W)renderSched()},60000);
@@ -835,6 +837,13 @@ document.addEventListener('submit',e=>{const f=e.target;if(!f.dataset.rec)return
 try{const u=JSON.parse(localStorage.getItem('forma-ui')||'null');if(u&&!S.ui)S.ui=u}catch(e){}
 S.lvl=S.lvl||lvl(xpTotal()).n;
 
+function tlToggle(t){const[k,id]=t.dataset.tl.split('|'),l=L(cur);
+  if(k==='meal'){l.m[id]?delete l.m[id]:l.m[id]=1}
+  else if(k==='wo'){const ex=S.plan.days[parse(cur).getDay()]||[],all=ex.every(e=>l.x[e.id]);ex.forEach(e=>all?delete l.x[e.id]:l.x[e.id]=1)}
+  else{l.sc=l.sc||{};if(l.sc[id])delete l.sc[id];else{l.sc[id]=1;if(id==='wake'&&!l.w){l.w=1;toast('Отмечено. Плюс 1 стакан воды')}}}
+  changed()}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-tl]');if(t)tlToggle(t)});
+document.addEventListener('keydown',e=>{const t=e.target.closest&&e.target.closest('[data-tl]');if(t&&(e.key===' '||e.key==='Enter')){e.preventDefault();tlToggle(t)}});
 render();
 
 /* ---------- облако: свои данные у каждого, на всех устройствах ---------- */
