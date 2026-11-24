@@ -1128,7 +1128,7 @@ if(SV())syncNow();
 })();
 }
 </script>
-<script>window.FORMA_V=17;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+<script>window.FORMA_V=18;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 function formaCheck(){fetch("version.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=parseInt(v);if(!(v>window.FORMA_V)||document.querySelector(".upd"))return;
   const b=document.createElement("div");b.className="upd";b.innerHTML='<span>Есть обновление</span><button class="btn">Обновить</button>';
   b.querySelector("button").onclick=async()=>{try{for(const k of await caches.keys())await (await caches.open(k)).delete("index.html")}catch(e){}location.reload()};document.body.appendChild(b)}).catch(()=>{})}
