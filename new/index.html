@@ -140,7 +140,14 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .wo .acts .sec2{height:48px;border-radius:16px;background:#ffffff0d;color:#ffffffb0;font-weight:700}
 /* эффекты */
 #fx{position:fixed;inset:0;pointer-events:none;z-index:80}
-.cf{position:absolute;width:7px;height:7px;border-radius:2px}
+.rip{position:absolute;width:160px;height:160px;margin:-80px 0 0 -80px;border-radius:50%;border:2px solid var(--c,#5ee6a8);pointer-events:none}
+.bigw{position:fixed;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;pointer-events:none;box-shadow:0 0 0 2px var(--c,#5ee6a8),0 0 60px 10px var(--c,#5ee6a8)}
+.flash{position:fixed;inset:0;pointer-events:none;background:radial-gradient(60% 50% at 50% 50%,var(--c,#5ee6a8),transparent 70%)}
+.shine{position:relative}.shine::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 30%,#ffffff40 50%,transparent 70%);background-size:250% 100%;animation:shine .8s ease-out}
+@keyframes shine{from{background-position:120% 0}to{background-position:-60% 0}}
+.lv.pulse{animation:lvp .9s var(--spring)}@keyframes lvp{40%{transform:scale(1.3)}}
+.snd{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center}
+.snd svg{width:20px;height:20px;fill:none;stroke:var(--mut);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .xp{position:absolute;font-weight:800;color:var(--acc);font-size:16px;white-space:nowrap}
 .toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;background:#f3f4f8;color:#0b0d12;padding:12px 18px;border-radius:16px;font-weight:700;z-index:60;transition:all .4s var(--spring);white-space:nowrap}
 .toast.on{opacity:1;transform:translate(-50%,0)}
@@ -153,6 +160,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   <p class="demo">Тестовая версия дизайна · данные примерные</p>
   <header class="hd">
     <div class="who"><small id="greet">Добрый день</small><b id="dateT">Вторник, 24 ноября</b></div>
+    <button class="snd" id="snd" aria-label="Звук"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path id="sndW" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/><path id="sndX" d="M16 9.5l5 5M21 9.5l-5 5" style="display:none"/></svg></button>
     <button class="lv" id="lvBtn" aria-label="Уровень"><svg viewBox="0 0 46 46"><circle class="t" cx="23" cy="23" r="20"/><circle class="p" id="lvP" cx="23" cy="23" r="20" stroke-dasharray="125.7" stroke-dashoffset="125.7"/></svg><span id="lvN">3</span></button>
   </header>
 
@@ -251,10 +259,34 @@ const LV=[0,100,300,600,1000];
 
 /* --- эффекты --- */
 const fx=$('#fx');
-function burst(x,y,n=16,cols=['#5ee6a8','#ff7a59','#ffd27a','#fff','#4aa8ff']){if(RM)return;for(let i=0;i<n;i++){const e=document.createElement('i');e.className='cf';e.style.cssText=`left:${x}px;top:${y}px;background:${cols[i%cols.length]}`;fx.appendChild(e);
-  const a=Math.random()*Math.PI*2,d=40+Math.random()*60;e.animate([{transform:'translate(-50%,-50%)',opacity:1},{transform:`translate(calc(-50% + ${Math.cos(a)*d}px),calc(-50% + ${Math.sin(a)*d}px)) rotate(${Math.random()*360}deg) scale(.4)`,opacity:0}],{duration:600+Math.random()*300,easing:'cubic-bezier(.15,.7,.3,1)'}).onfinish=()=>e.remove()}}
-function confetti(){if(RM)return;for(let i=0;i<110;i++){const e=document.createElement('i');e.className='cf';e.style.cssText=`left:${Math.random()*innerWidth}px;top:-12px;width:8px;height:12px;background:${['#5ee6a8','#ff7a59','#ffd27a','#fff','#4aa8ff','#9d8cff'][i%6]}`;fx.appendChild(e);
-  e.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${(Math.random()-.5)*200}px,${innerHeight+40}px) rotate(${(Math.random()-.5)*900}deg)`}],{duration:1600+Math.random()*1200,delay:Math.random()*300,easing:'cubic-bezier(.3,.55,.6,1)',fill:'backwards'}).onfinish=()=>e.remove()}}
+/* мягкие эффекты вместо салюта */
+function burst(x,y,n,cols){if(RM)return;const c=(cols&&cols[0])||'#5ee6a8';for(let k=0;k<2;k++){const e=document.createElement('i');e.className='rip';e.style.cssText=`left:${x}px;top:${y}px;--c:${c}`;fx.appendChild(e);
+  e.animate([{transform:'scale(.1)',opacity:.9},{transform:'scale(1)',opacity:0}],{duration:650,delay:k*120,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'}).onfinish=()=>e.remove()}}
+function confetti(c='#5ee6a8'){if(RM)return;const f=document.createElement('i');f.className='flash';f.style.setProperty('--c',c+'55');fx.appendChild(f);
+  f.animate([{opacity:0},{opacity:1,offset:.25},{opacity:0}],{duration:900,easing:'ease-out'}).onfinish=()=>f.remove();
+  for(let k=0;k<3;k++){const w=document.createElement('i');w.className='bigw';w.style.setProperty('--c',c);fx.appendChild(w);
+    w.animate([{transform:'scale(0)',opacity:1},{transform:`scale(${Math.hypot(innerWidth,innerHeight)/30})`,opacity:0}],{duration:1100,delay:k*160,easing:'cubic-bezier(.2,.7,.2,1)',fill:'backwards'}).onfinish=()=>w.remove()}}
+function shine(el){if(RM||!el)return;el.classList.remove('shine');void el.offsetWidth;el.classList.add('shine');setTimeout(()=>el.classList.remove('shine'),850)}
+
+/* звук: синтез без файлов */
+let AC=null,soundOn=true;try{soundOn=localStorage.getItem('fd-sound')!=='0'}catch(e){}
+const ac=()=>{if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC};
+function tone(f,d=.18,type='sine',g=.18,when=0,f2){const c=ac();if(!c||!soundOn)return;const t=c.currentTime+when,o=c.createOscillator(),v=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+  v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(g,t+.012);v.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(v);v.connect(c.destination);o.start(t);o.stop(t+d+.05)}
+const SND={
+  done:()=>{tone(659,.22,'triangle',.16);tone(988,.32,'sine',.13,.07)},
+  undo:()=>{tone(523,.15,'triangle',.1);tone(392,.2,'sine',.08,.06)},
+  water:()=>tone(900,.16,'sine',.2,0,260),
+  tap:()=>tone(1400,.04,'sine',.05),
+  level:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.4,'triangle',.14,i*.09)),
+  big:()=>{[392,523,659,784].forEach((f,i)=>tone(f,.5,'sine',.11,i*.06));tone(1047,.7,'triangle',.1,.3)},
+  beep:()=>{tone(880,.12,'square',.06);tone(880,.12,'square',.06,.18)}
+};
+let holdOsc=null;
+function holdSound(on){const c=ac();if(!c||!soundOn)return;if(on){const o=c.createOscillator(),v=c.createGain(),t=c.currentTime;o.type='sine';o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(520,t+.7);
+  v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(.07,t+.08);o.connect(v);v.connect(c.destination);o.start(t);holdOsc={o,v}}
+  else if(holdOsc){const t=c.currentTime;holdOsc.v.gain.cancelScheduledValues(t);holdOsc.v.gain.setTargetAtTime(0,t,.03);holdOsc.o.stop(t+.15);holdOsc=null}}
+function sndIcon(){$('#sndW').style.display=soundOn?'':'none';$('#sndX').style.display=soundOn?'none':''}
 function floatXP(x,y,t){if(RM)return;const e=document.createElement('b');e.className='xp';e.textContent=t;e.style.cssText=`left:${x}px;top:${y}px`;fx.appendChild(e);
   e.animate([{transform:'translate(-50%,0) scale(.7)',opacity:0},{transform:'translate(-50%,-18px) scale(1.1)',opacity:1,offset:.25},{transform:'translate(-50%,-60px)',opacity:0}],{duration:1100,easing:'ease-out'}).onfinish=()=>e.remove()}
 const buzz=v=>{try{navigator.vibrate&&navigator.vibrate(v)}catch(e){}};
@@ -263,7 +295,7 @@ function tick(el,to,suf=''){const from=parseFloat(el.dataset.v||0);el.dataset.v=
 
 /* --- XP и уровень --- */
 function addXP(v,el){xp+=v;if(el){const r=el.getBoundingClientRect();floatXP(r.left+r.width/2,r.top,'+'+v+' XP')}
-  while(lvl<LV.length-1&&xp>=LV[lvl]){lvl++;setTimeout(()=>{confetti();toast('Новый уровень '+lvl+'!');buzz([20,40,20])},500)}
+  while(lvl<LV.length-1&&xp>=LV[lvl]){lvl++;setTimeout(()=>{confetti('#ff7a59');SND.level();const l=$('#lvBtn');l.classList.remove('pulse');void l.offsetWidth;l.classList.add('pulse');toast('Новый уровень '+lvl+'!');buzz([20,40,20])},500)}
   drawLv()}
 function drawLv(){const a=LV[lvl-1]||0,b=LV[lvl]||a+500,k=(xp-a)/(b-a);$('#lvP').style.strokeDashoffset=(125.7*(1-k)).toFixed(1);$('#lvN').textContent=lvl;
   $('#pLv').textContent=lvl;$('#pXp').style.width=Math.round(k*100)+'%';$('#pXpT').textContent=`${xp-a} / ${b-a} XP до уровня ${lvl+1}`}
@@ -304,8 +336,8 @@ function nowCard(anim){const x=focusTask(),el=$('#now');const n=now();
   const sw=$('#startWo');if(sw)sw.onclick=e=>openWo(e);
   $('#skip').onclick=()=>{const i=TASKS.indexOf(x);TASKS.push(TASKS.splice(i,1)[0]);x.t=Math.max(x.t,now()+30);TASKS.sort((a,b)=>a.t-b.t);toast('Сдвинул на 30 минут');render(true)};
   $('#info').onclick=()=>toast('В тестовой версии — только для вида')}
-function bindHold(h,fn){let tm=null;const start=e=>{e.preventDefault();h.classList.add('go');buzz(8);tm=setTimeout(()=>{h.classList.add('done');h.querySelector('span').textContent='Готово';fn()},700)};
-  const stop=()=>{if(h.classList.contains('done'))return;clearTimeout(tm);h.classList.remove('go')};
+function bindHold(h,fn){let tm=null;const start=e=>{e.preventDefault();h.classList.add('go');buzz(8);holdSound(true);tm=setTimeout(()=>{holdSound(false);h.classList.add('done');h.querySelector('span').textContent='Готово';fn()},700)};
+  const stop=()=>{if(h.classList.contains('done'))return;clearTimeout(tm);holdSound(false);h.classList.remove('go')};
   h.addEventListener('pointerdown',start);['pointerup','pointerleave','pointercancel'].forEach(t=>h.addEventListener(t,stop));
   h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();h.classList.add('done');fn()}})}
 
@@ -324,16 +356,16 @@ function bindSwipe(it){const fg=it.querySelector('.fg'),id=it.dataset.id;let x0=
   fg.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();complete(id,fg,false)}})}
 
 /* --- отметка --- */
-function complete(id,el,fromFocus){if(done.has(id)){done.delete(id);render();return}
-  done.add(id);const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2);buzz(12);addXP(id==='wo'?90:10,el);
-  if(done.size===TASKS.length)setTimeout(()=>{confetti();toast('День закрыт на 100%!')},300);
+function complete(id,el,fromFocus){if(done.has(id)){done.delete(id);SND.undo();render();return}
+  done.add(id);const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2);shine(el.closest('.now,.it')||el);SND.done();buzz(12);addXP(id==='wo'?90:10,el);
+  if(done.size===TASKS.length)setTimeout(()=>{confetti('#5ee6a8');SND.big();toast('День закрыт на 100%!')},300);
   if(fromFocus&&!RM){const c=$('#now');c.classList.add('cardout');setTimeout(()=>{c.classList.remove('cardout');render(true,id)},430)}else render(false,id)}
 function render(anim,popId){arc(popId);nowCard(anim);list()}
 
 /* --- вода --- */
 $('#tWater').onclick=e=>{water=water>=11?0:water+1;$('#wave').style.setProperty('--h',Math.round(water/11*100)+'%');$('#wN').innerHTML=`${water}<em> / 11</em>`;
-  if(water){const r=e.currentTarget.getBoundingClientRect();burst(r.right-28,r.top+28,8,['#4aa8ff','#9fd4ff','#fff']);addXP(2,e.currentTarget)}buzz(6);
-  if(water===11){confetti();toast('Норма воды выполнена!')}};
+  if(water){const r=e.currentTarget.getBoundingClientRect();burst(r.right-28,r.top+28,8,['#4aa8ff']);SND.water();addXP(2,e.currentTarget)}else SND.undo();buzz(6);
+  if(water===11){confetti('#4aa8ff');SND.big();toast('Норма воды выполнена!')}};
 $('#wave').style.setProperty('--h',Math.round(water/11*100)+'%');
 
 /* --- питание --- */
@@ -351,12 +383,12 @@ const ORDER=['today','food','prog','me'];let cur='today';
 document.querySelectorAll('.tb>button[data-s]').forEach(b=>b.onclick=()=>{const to=b.dataset.s;if(to===cur)return;const back=ORDER.indexOf(to)<ORDER.indexOf(cur);cur=to;
   document.querySelectorAll('.tb>button[data-s]').forEach(x=>x.classList.toggle('on',x===b));
   document.querySelectorAll('.scr').forEach(s=>{s.classList.remove('on','l')});const s=$('#s-'+to);s.classList.add('on');if(back)s.classList.add('l');
-  scrollTo({top:0});buzz(5);if(to==='food')rings();if(to==='prog'){heat();drawLv()}});
+  scrollTo({top:0});buzz(5);SND.tap();if(to==='food')rings();if(to==='prog'){heat();drawLv()}});
 
 /* --- тренировка --- */
 const EX=[['Разминка','5','минут','Суставы и ходьба на месте',0],['Приседания','12','повторов','Таз назад, колени над носками',2],['Отжимания от стола','8','повторов','Тело — прямая линия',2],['Ягодичный мост','12','повторов','Задержка наверху 1 секунду',2],['Планка','20','секунд','Живот и ягодицы напряжены',1],['Растяжка','5','минут','Плавно, без рывков',0]];
 let W=null;
-function openWo(e){const r=$('#fab').getBoundingClientRect(),src=e&&e.currentTarget?e.currentTarget.getBoundingClientRect():r;
+function openWo(e){SND.tap();const r=$('#fab').getBoundingClientRect(),src=e&&e.currentTarget?e.currentTarget.getBoundingClientRect():r;
   const wo=$('#wo');wo.style.setProperty('--cx',(src.left+src.width/2)+'px');wo.style.setProperty('--cy',(src.top+src.height/2)+'px');
   W={i:0,set:1,rest:0};$('#segs').innerHTML=EX.map(()=>'<i><b></b></i>').join('');wo.classList.add('open');document.body.style.overflow='hidden';buzz(10);woDraw()}
 function closeWo(){$('#wo').classList.remove('open');document.body.style.overflow='';clearInterval(W&&W.tm);W=null}
@@ -364,18 +396,19 @@ $('#fab').onclick=openWo;$('#woX').onclick=closeWo;
 function woDraw(){if(!W)return;const segs=document.querySelectorAll('#segs i b');segs.forEach((b,j)=>b.style.width=j<W.i?'100%':j===W.i?Math.round((W.set-1)/Math.max(1,EX[j][4]||1)*100)+'%':'0');
   if(W.i>=EX.length){$('#woStep').textContent='Готово';$('#woBody').innerHTML=`<small>Тренировка завершена</small><h2>Как прошло?</h2><p>+90 XP</p>`;
     $('#woActs').innerHTML=['Легко','Нормально','Тяжело'].map(t=>`<button class="sec2" data-r>${t}</button>`).join('');
-    document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{done.add('wo');closeWo();addXP(90,$('#fab'));confetti();render(true,'wo');toast('Тренировка записана')});return}
+    document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{done.add('wo');closeWo();addXP(90,$('#fab'));confetti('#ff7a59');SND.big();render(true,'wo');toast('Тренировка записана')});return}
   const [n,v,u,tip,sets]=EX[W.i];$('#woStep').textContent=`Упражнение ${W.i+1} из ${EX.length}${sets?` · подход ${W.set} из ${sets}`:''}`;
   if(W.rest>0){$('#woBody').innerHTML=`<small>Отдых</small><div class="rest"><svg viewBox="0 0 220 220"><circle cx="110" cy="110" r="100" stroke="#ffffff1a"/><circle id="rc" cx="110" cy="110" r="100" stroke="#5ee6a8" stroke-dasharray="628.3" stroke-dashoffset="0"/></svg><span class="num" id="rn">${W.rest}</span></div><p>Дальше: ${n}</p>`;
     $('#woActs').innerHTML=`<button class="sec2" id="skipR">Пропустить отдых</button>`;$('#skipR').onclick=()=>{clearInterval(W.tm);W.rest=0;woDraw()};
-    const T=W.rest,t0=Date.now();clearInterval(W.tm);W.tm=setInterval(()=>{const left=Math.max(0,T-(Date.now()-t0)/1000);const rn=$('#rn'),rc=$('#rc');if(rn)rn.textContent=Math.ceil(left);if(rc)rc.style.strokeDashoffset=(628.3*(1-left/T)).toFixed(1);if(left<=0){clearInterval(W.tm);W.rest=0;buzz([15,30,15]);woDraw()}},100);return}
+    const T=W.rest,t0=Date.now();clearInterval(W.tm);W.tm=setInterval(()=>{const left=Math.max(0,T-(Date.now()-t0)/1000);const rn=$('#rn'),rc=$('#rc');if(rn)rn.textContent=Math.ceil(left);if(rc)rc.style.strokeDashoffset=(628.3*(1-left/T)).toFixed(1);if(left<=0){clearInterval(W.tm);W.rest=0;buzz([15,30,15]);SND.beep();woDraw()}},100);return}
   $('#woBody').innerHTML=`<small>${sets?'Подход '+W.set:'Начни'}</small><h2>${n}</h2><span class="num">${v}</span><p>${u} · ${tip}</p>`;
   $('#woActs').innerHTML=`<button class="hold" id="woHold"><i></i><span>Удерживай — сделал</span></button><button class="sec2" id="woSkip">Пропустить</button>`;
-  bindHold($('#woHold'),()=>{const r=$('#woHold').getBoundingClientRect();burst(r.left+r.width/2,r.top);setTimeout(()=>{if(sets&&W.set<sets){W.set++;W.rest=10}else{W.i++;W.set=1;W.rest=W.i<EX.length&&EX[W.i-1][4]?10:0}woDraw()},350)});
+  bindHold($('#woHold'),()=>{const r=$('#woHold').getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,0,['#ffffff']);SND.done();setTimeout(()=>{if(sets&&W.set<sets){W.set++;W.rest=10}else{W.i++;W.set=1;W.rest=W.i<EX.length&&EX[W.i-1][4]?10:0}woDraw()},350)});
   $('#woSkip').onclick=()=>{W.i++;W.set=1;W.rest=0;woDraw()}}
 addEventListener('keydown',e=>{if(e.key==='Escape'&&W)closeWo()});
 
 /* --- старт --- */
+$('#snd').onclick=()=>{soundOn=!soundOn;try{localStorage.setItem('fd-sound',soundOn?'1':'0')}catch(e){}sndIcon();if(soundOn)SND.tap()};sndIcon();
 sky();drawLv();render();setInterval(()=>{sky();arc()},60000);
 }
 </script>
