@@ -291,6 +291,7 @@ function score(k){
 }
 
 /* ---------- эффекты ---------- */
+const APPV=11;
 const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const FXC=['#c6f432','#ffd23f','#3aa0e8','#ff7ab6','#ffffff'];
 function fxl(){let l=document.getElementById('fx');if(!l){l=document.createElement('div');l.id='fx';document.body.appendChild(l)}return l}
@@ -604,6 +605,7 @@ function renderMe(){
     <div class="card"><h3>Привычки</h3>${plRows(S.plan.habits,'h')}
       <form class="row" data-add="h" style="margin-top:10px"><input type="text" name="n" placeholder="Новая привычка" required><button class="btn">Добавить</button></form></div>
     ${svCard()}${uiCard()}${bkCard()}
+    <p class="muted" style="text-align:center;margin:0">Версия ${APPV}</p>
     <div class="card"><h3>Сброс</h3><button class="btn ghost" id="reset" style="width:100%">Вернуть план тренировок по умолчанию</button><p class="muted" id="rconf" hidden>Отметки останутся. <button class="btn" id="ryes">Вернуть</button></p></div>
   </div></div>`;
 }
@@ -1012,6 +1014,9 @@ if(SV())syncNow();
 })();
 }
 </script>
-<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}</script>
+<script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let done=false;
+navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!done){done=true;location.reload()}});
+navigator.serviceWorker.register("sw.js").then(r=>{r.update&&r.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")r.update().catch(()=>{})})}).catch(()=>{})}
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}</script>
 </body>
 </html>
