@@ -127,7 +127,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .pals button:active{transform:scale(.92)}
 .pals i{width:46%;aspect-ratio:1;border-radius:50%;background:linear-gradient(135deg,var(--a),var(--b));box-shadow:0 6px 18px -6px var(--a)}
 .pals button.on{border:2px solid var(--a)}.pals button.on::after{content:"";position:absolute;right:8px;top:8px;width:8px;height:8px;border-radius:50%;background:var(--a)}
-.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px}
+.seg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px}
 .seg button{height:42px;border-radius:12px;font-weight:700;font-size:14px;color:var(--mut)}.seg button.on{background:var(--card2);color:var(--ink)}
 /* тренировка: полноэкранная */
 .wo{position:fixed;inset:0;z-index:50;background:radial-gradient(120% 80% at 50% 0%,color-mix(in srgb,var(--acc) 28%,#0b0d12),var(--bg) 60%);display:flex;flex-direction:column;padding:calc(14px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));clip-path:circle(0 at var(--cx,50%) var(--cy,100%));transition:clip-path .6s var(--ease);visibility:hidden}
@@ -225,7 +225,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
     <div class="sec"><h3>Цвет</h3><small id="palN"></small></div>
     <div class="pals" id="pals"></div>
     <div class="sec"><h3>Звуки</h3></div>
-    <div class="seg" id="packs"><button data-pk="retro">Ретро-игра</button><button data-pk="soft">Мягкие</button><button data-pk="off">Без звука</button></div>
+    <div class="seg" id="packs"><button data-pk="sfx">Игровые</button><button data-pk="retro">Ретро</button><button data-pk="soft">Мягкие</button><button data-pk="off">Выкл</button></div>
+    <p class="hint">Звуки «Игровые»: <a href="https://jdsherbert.itch.io/" style="color:inherit">JDSherbert — Ultimate UI SFX Pack</a></p>
     <p class="hint">Остальные настройки в тестовой версии только для вида</p>
   </section>
 </div>
@@ -290,10 +291,18 @@ let AC=null,soundOn=true;try{soundOn=localStorage.getItem('fd-sound')!=='0'}catc
 const ac=()=>{if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC};
 function tone(f,d=.18,type='sine',g=.18,when=0,f2){const c=ac();if(!c||!soundOn)return;const t=c.currentTime+when,o=c.createOscillator(),v=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
   v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(g,t+.012);v.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(v);v.connect(c.destination);o.start(t);o.stop(t+d+.05)}
-let pack='retro';try{pack=localStorage.getItem('fd-pack')||'retro'}catch(e){}
+let pack='sfx';try{pack=localStorage.getItem('fd-pack')||'sfx'}catch(e){}
+/* набор JDSherbert — Ultimate UI SFX Pack (используется как есть, с указанием автора) */
+const SFX={done:'select-1',big:'select-2',undo:'cancel-1',tap:'cursor-1',water:'cursor-3',beep:'cursor-5',level:'popup-open-1',open:'popup-open-1',close:'popup-close-1',hold:'swipe-1',swipe:'swipe-2'};
+const BUF={};let sfxLoading=null;
+function loadSfx(){if(sfxLoading)return sfxLoading;const c=ac();if(!c)return Promise.resolve();
+  sfxLoading=Promise.all([...new Set(Object.values(SFX))].map(n=>fetch('sfx/'+n+'.mp3').then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>c.decodeAudioData(b,ok,no))).then(d=>{BUF[n]=d}).catch(()=>{})));return sfxLoading}
+function playSfx(k,g=.7){const c=ac(),n=SFX[k];if(!c||!soundOn||!n)return;const b=BUF[n];if(!b){loadSfx().then(()=>{if(BUF[n])playSfx(k,g)});return}
+  const s=c.createBufferSource(),v=c.createGain();s.buffer=b;v.gain.value=g;s.connect(v);v.connect(c.destination);s.start()}
 /* ретро: прямоугольная волна, как в старых приставках */
 const sq=(f,d,g=.07,w=0,f2)=>tone(f,d,'square',g,w,f2);
 const PACKS={
+ sfx:new Proxy({},{get:(_,k)=>()=>playSfx(k)}),
  retro:{
   done:()=>{sq(880,.06,.06);sq(1175,.22,.06,.06)},
   undo:()=>{sq(587,.06,.05);sq(392,.16,.05,.06)},
@@ -310,9 +319,9 @@ const PACKS={
   level:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.4,'triangle',.14,i*.09)),
   big:()=>{[392,523,659,784].forEach((f,i)=>tone(f,.5,'sine',.11,i*.06));tone(1047,.7,'triangle',.1,.3)},
   beep:()=>{tone(880,.12,'square',.06);tone(880,.12,'square',.06,.18)}}};
-const SND=new Proxy({},{get:(_,k)=>()=>{const p=PACKS[pack]||PACKS.retro;p[k]&&p[k]()}});
+const SND=new Proxy({},{get:(_,k)=>()=>{const p=PACKS[pack]||PACKS.sfx;const f=p[k];f&&f()}});
 let holdOsc=null;
-function holdSound(on){const c=ac();if(!c||!soundOn)return;if(on){const t=c.currentTime,v=c.createGain(),o=c.createOscillator();
+function holdSound(on){const c=ac();if(!c||!soundOn)return;if(pack==='sfx'){if(on)playSfx('hold',.6);return}if(on){const t=c.currentTime,v=c.createGain(),o=c.createOscillator();
   if(pack==='retro'){o.type='square';o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(700,t+.7);const l=c.createOscillator(),lg=c.createGain();l.frequency.value=22;lg.gain.value=18;l.connect(lg);lg.connect(o.frequency);l.start(t);l.stop(t+1.2);v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(.045,t+.05)}
   else{o.type='sine';o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(520,t+.7);v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(.07,t+.08)}
   o.connect(v);v.connect(c.destination);o.start(t);holdOsc={o,v}}
@@ -382,7 +391,7 @@ function bindSwipe(it){const fg=it.querySelector('.fg'),id=it.dataset.id;let x0=
   fg.addEventListener('pointermove',e=>{if(x0==null)return;const mx=e.clientX-x0,my=e.clientY-y0;if(lock==null&&(Math.abs(mx)>8||Math.abs(my)>8))lock=Math.abs(mx)>Math.abs(my)?'x':'y';
     if(lock!=='x')return;dx=Math.max(0,mx);fg.classList.add('drag');fg.style.transform=`translateX(${dx}px)`});
   const end=()=>{if(x0==null)return;fg.classList.remove('drag');const w=fg.offsetWidth;
-    if(lock==='x'&&dx>w*.35){fg.style.transform=`translateX(${w}px)`;setTimeout(()=>complete(id,fg,false),220)}else fg.style.transform='';x0=null};
+    if(lock==='x'&&dx>w*.35){fg.style.transform=`translateX(${w}px)`;SND.swipe();setTimeout(()=>complete(id,fg,false),220)}else fg.style.transform='';x0=null};
   fg.addEventListener('pointerup',end);fg.addEventListener('pointercancel',end);
   fg.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();complete(id,fg,false)}})}
 
@@ -419,10 +428,10 @@ document.querySelectorAll('.tb>button[data-s]').forEach(b=>b.onclick=()=>{const 
 /* --- тренировка --- */
 const EX=[['Разминка','5','минут','Суставы и ходьба на месте',0],['Приседания','12','повторов','Таз назад, колени над носками',2],['Отжимания от стола','8','повторов','Тело — прямая линия',2],['Ягодичный мост','12','повторов','Задержка наверху 1 секунду',2],['Планка','20','секунд','Живот и ягодицы напряжены',1],['Растяжка','5','минут','Плавно, без рывков',0]];
 let W=null;
-function openWo(e){SND.tap();const r=$('#fab').getBoundingClientRect(),src=e&&e.currentTarget?e.currentTarget.getBoundingClientRect():r;
+function openWo(e){SND.open();const r=$('#fab').getBoundingClientRect(),src=e&&e.currentTarget?e.currentTarget.getBoundingClientRect():r;
   const wo=$('#wo');wo.style.setProperty('--cx',(src.left+src.width/2)+'px');wo.style.setProperty('--cy',(src.top+src.height/2)+'px');
   W={i:0,set:1,rest:0};$('#segs').innerHTML=EX.map(()=>'<i><b></b></i>').join('');wo.classList.add('open');document.body.style.overflow='hidden';buzz(10);woDraw()}
-function closeWo(){$('#wo').classList.remove('open');document.body.style.overflow='';clearInterval(W&&W.tm);W=null}
+function closeWo(){SND.close();$('#wo').classList.remove('open');document.body.style.overflow='';clearInterval(W&&W.tm);W=null}
 $('#fab').onclick=openWo;$('#woX').onclick=closeWo;
 function woDraw(){if(!W)return;const segs=document.querySelectorAll('#segs i b');segs.forEach((b,j)=>b.style.width=j<W.i?'100%':j===W.i?Math.round((W.set-1)/Math.max(1,EX[j][4]||1)*100)+'%':'0');
   if(W.i>=EX.length){$('#woStep').textContent='Готово';$('#woBody').innerHTML=`<small>Тренировка завершена</small><h2>Как прошло?</h2><p>+90 XP</p>`;
@@ -447,6 +456,7 @@ document.addEventListener('click',e=>{const pb=e.target.closest('[data-pal]');if
   const kb=e.target.closest('[data-pk]');if(kb){const k=kb.dataset.pk;if(k==='off'){soundOn=false}else{soundOn=true;pack=k;try{localStorage.setItem('fd-pack',k)}catch(_){}}
     try{localStorage.setItem('fd-sound',soundOn?'1':'0')}catch(_){}sndIcon();drawPrefs();if(soundOn)SND.level()}});
 drawPrefs();
+addEventListener('pointerdown',()=>{if(soundOn&&pack==='sfx')loadSfx()},{once:true});
 sky();drawLv();render();setInterval(()=>{sky();arc()},60000);
 }
 </script>
