@@ -155,7 +155,9 @@ textarea{width:100%;margin:10px 0;border:1px solid var(--line);background:var(--
 .stp{display:flex;flex-wrap:wrap;gap:6px}.stp div{border:1px solid var(--line);border-radius:12px;padding:6px 10px;display:grid}.stp small{color:var(--mut);font-size:12px}.stp .on{background:var(--red);color:#fff;border-color:var(--red)}.stp .on small{color:#fff}
 .tl.tap{cursor:pointer;user-select:none}.tl.tap:hover{background:color-mix(in srgb,var(--line) 50%,transparent);border-radius:10px}
 .tc{width:22px;height:22px;border-radius:50%;border:2px solid var(--line)}
-.mchk{display:flex;flex-wrap:wrap;gap:6px}
+.mlist{display:grid;gap:6px}.mrow{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:4px 8px;align-items:center}
+.mrow .ck{justify-self:stretch}.mrow input[type=time]{width:100%;min-height:44px;color:var(--ink)}.mrow small{grid-column:2;color:var(--mut);font-size:12px;margin-top:-2px}
+.mrow:not(:has(input:checked)) input[type=time],.mrow:not(:has(input:checked)) small{opacity:.4}
 .ck{display:inline-flex!important;align-items:center;gap:8px;margin:0!important;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:999px;cursor:pointer;color:var(--ink)!important;font-size:15px!important}
 .ck input{width:18px!important;height:18px;accent-color:var(--red);margin:0}
 .ck:has(input:checked){background:color-mix(in srgb,var(--red) 14%,transparent);border-color:var(--red)}
@@ -470,8 +472,13 @@ function SCHED(k){
 
   A(wake,'Подъём, стакан воды','x','wake');
   if(workDay)A(work[0],'Работа / учёба до '+hm(work[1]),'info');
-  const ms=S.plan.meals,TM={'Завтрак':bf,'Второй завтрак':(bf+lunch)/2,'Обед':lunch,'Перекус':(lunch+dinner)/2,'Полдник':(lunch+dinner)/2,'Ужин':dinner,'Перекус перед сном':Math.min(sleep-90,dinner+120)};
-  const tt=ms.map(e=>TM[e.n]);
+  const ov=n=>{const e=S.plan.meals.find(x=>x.n===n);if(!e||!e.t)return null;let m=tm(e.t);if(m<wake-60)m+=1440;return m};
+  if(ov('Завтрак')!=null)bf=ov('Завтрак');
+  if(ov('Обед')!=null){lunch=ov('Обед');if(ov('Ужин')==null)dinner=Math.min(Math.max(dinner,lunch+150),sleep-60)}
+  if(ov('Ужин')!=null)dinner=ov('Ужин');
+  const hasBf=S.plan.meals.some(x=>x.n==='Завтрак'),hasB2=S.plan.meals.some(x=>x.n==='Второй завтрак'),snk=hasBf&&!hasB2&&lunch-bf>dinner-lunch?(bf+lunch)/2:(lunch+dinner)/2;
+  const ms=S.plan.meals,TM={'Завтрак':bf,'Второй завтрак':(bf+lunch)/2,'Обед':lunch,'Перекус':snk,'Полдник':snk,'Ужин':dinner,'Перекус перед сном':Math.min(sleep-90,dinner+120)};
+  const tt=ms.map(e=>ov(e.n)??TM[e.n]);
   ms.forEach((e,i)=>{let t=tt[i];if(t==null){let a=i-1;while(a>=0&&tt[a]==null)a--;let b=i+1;while(b<ms.length&&tt[b]==null)b++;
       const ta=a>=0?tt[a]:bf,tb=b<ms.length?tt[b]:dinner;t=a>=0&&b<ms.length?(ta+tb)/2:a<0&&b<ms.length?Math.max(wake+30,tb-150):Math.min(sleep-90,ta+150)}
     A(t,e.n,'meal',e.id)});
@@ -514,7 +521,9 @@ function renderMe(){
     <label>Работа / учёба с<input type="time" name="ws" value="${esc(p.ws||'09:00')}"></label><label>до<input type="time" name="we" value="${esc(p.we||'18:00')}"></label></div>
     <label>Рабочие дни<select name="wd">${o('wd',[['wk','Пн–Пт'],['all','Каждый день'],['none','Не работаю / свободный график']])}</select></label>
     <p style="margin:14px 0 4px;font-size:14px;color:var(--mut)">Когда ты ешь — норма поделится на эти приёмы</p>
-    <div class="mchk">${MEALS.map(([n])=>`<label class="ck"><input type="checkbox" name="ml" value="${n}"${S.plan.meals.some(e=>e.n===n||(n==='Перекус'&&e.n==='Полдник'))?' checked':''}><span>${n}</span></label>`).join('')}</div>
+    <div class="mlist">${(()=>{const sc=SCHED(TODAY());return MEALS.map(([n])=>{const e=S.plan.meals.find(x=>x.n===n||(n==='Перекус'&&x.n==='Полдник')),it=e&&sc.find(x=>x.id===e.id);
+      return `<div class="mrow"><label class="ck"><input type="checkbox" name="ml" value="${n}"${e?' checked':''}><span>${n}</span></label><input type="time" name="mt_${n}" value="${esc(e&&e.t||'')}" aria-label="Время: ${n}"><small>${e&&e.t?'своё время':it?'авто: '+hm(it.m):'авто'}</small></div>`}).join('')})()}</div>
+    <p class="muted" style="margin:4px 0 0">Время оставь пустым — подберу сам по распорядку. Поставишь своё — остальные приёмы подстроятся.</p>
     <h3 style="margin-top:18px">Сколько ешь сейчас</h3>
     <label>Калорий в день сейчас<input type="number" name="ck" min="800" max="8000" step="50" placeholder="если знаешь, например 2800" value="${esc(p.ck||'')}"></label>
     <p class="muted" style="margin:6px 0 0">Не знаешь — оставь пустым и ответь на два вопроса ниже, прикину сам.</p>
@@ -689,6 +698,7 @@ document.addEventListener('submit',e=>{
   S.prof=Object.assign(fd,{age:+fd.age,h:+fd.h,w:+fd.w,steps:+fd.steps||8000,ck:+fd.ck||'',at:old.at});
   if(!old.at||old.ck!==S.prof.ck||old.ps!==S.prof.ps||old.jf!==S.prof.jf||old.goal!==S.prof.goal)S.prof.at=TODAY();
   const ml=new FormData(f).getAll('ml');delete S.prof.ml;if(ml.length)setMealNames(ml);
+  for(const k of Object.keys(S.prof))if(k.startsWith('mt_')){const e=S.plan.meals.find(x=>x.n===k.slice(3));if(e)e.t=S.prof[k]||'';delete S.prof[k]}
   const sth=S.plan.habits.find(h=>/шаг/i.test(h.n));if(sth)sth.n=fmtN(S.prof.steps)+'+ шагов';
   const tk2=TODAY();if(parseFloat(Lr(tk2).kg)!==+fd.w)L(tk2).kg=String(fd.w);
   const n=NUT();if(n)S.plan.water=n.water;
