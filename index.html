@@ -479,13 +479,23 @@ function SCHED(k){
   const hasBf=S.plan.meals.some(x=>x.n==='Завтрак'),hasB2=S.plan.meals.some(x=>x.n==='Второй завтрак'),snk=hasBf&&!hasB2&&lunch-bf>dinner-lunch?(bf+lunch)/2:(lunch+dinner)/2;
   const ms=S.plan.meals,TM={'Завтрак':bf,'Второй завтрак':(bf+lunch)/2,'Обед':lunch,'Перекус':snk,'Полдник':snk,'Ужин':dinner,'Перекус перед сном':Math.min(sleep-90,dinner+120)};
   const tt=ms.map(e=>ov(e.n)??TM[e.n]);
-  ms.forEach((e,i)=>{let t=tt[i];if(t==null){let a=i-1;while(a>=0&&tt[a]==null)a--;let b=i+1;while(b<ms.length&&tt[b]==null)b++;
-      const ta=a>=0?tt[a]:bf,tb=b<ms.length?tt[b]:dinner;t=a>=0&&b<ms.length?(ta+tb)/2:a<0&&b<ms.length?Math.max(wake+30,tb-150):Math.min(sleep-90,ta+150)}
-    A(t,e.n,'meal',e.id)});
+  const ft=ms.map((e,i)=>{let t=tt[i];if(t==null){let a=i-1;while(a>=0&&tt[a]==null)a--;let b=i+1;while(b<ms.length&&tt[b]==null)b++;
+      const ta=a>=0?tt[a]:bf,tb=b<ms.length?tt[b]:dinner;t=a>=0&&b<ms.length?(ta+tb)/2:a<0&&b<ms.length?Math.max(wake+30,tb-150):Math.min(sleep-90,ta+150)}return t});
+  const notes=[];
+  if(wo!=null){const wo0=wo,dur=strong?40:30,big=e=>(MW[e.n]??.5)>=1,gap=e=>big(e)?(strong?120:60):(strong?45:20),fixed=i=>ov(ms[i].n)!=null;
+    let ci=-1;for(let k=0;k<4;k++){let mv=false;ms.forEach((e,i)=>{if(fixed(i)&&ft[i]>wo-gap(e)&&ft[i]<wo+dur){wo=ft[i]+gap(e);ci=i;mv=true}});if(!mv)break}
+    ms.forEach((e,i)=>{if(fixed(i))return;if(!(ft[i]>wo-gap(e)&&ft[i]<wo+dur))return;
+      const others=ft.filter((t,j)=>j!==i),bef=wo-gap(e),aft=wo+dur+20,free=t=>others.every(o=>Math.abs(o-t)>=75);
+      if(!big(e)&&free(bef)&&bef>=wake+30)ft[i]=bef;else if(free(aft)&&aft<=sleep-60)ft[i]=aft;else if(free(bef)&&bef>=wake+30)ft[i]=bef;
+      else{ft[i]=aft;notes.push(`${e.n} сегодня можно пропустить: между едой и тренировкой для него нет места.`)}});
+    if(wo!==wo0){const c=ms[ci];
+      notes.push(`${strong?'Тренировку':'Активность'} сдвинул на ${hm(wo)}: ${c?c.n.toLowerCase()+' в '+hm(ft[ci])+' — ':''}${c&&big(c)?(strong?'после плотной еды нужно около 2 часов':'после еды нужен час'):'нужно, чтобы еда улеглась'}.`)}
+    if(wo>sleep-120)notes.push('Тренировка поздновато: меньше чем за 2 часа до сна заснуть сложнее. Попробуй поставить еду пораньше.')}
+  ms.forEach((e,i)=>A(ft[i],e.n,'meal',e.id));
   if(wo!=null)A(wo,strong?'Тренировка':ex.map(e=>e.n).join(' + '),'wo');
   A(sleep-30,'Телефон в сторону, свет потише','x','screen');
   A(sleep,'Отбой','x','sleep');
-  return out.sort((a,b)=>a.m-b.m);
+  const res=out.sort((a,b)=>a.m-b.m);res.notes=notes;return res;
 }
 function renderSched(){
   const box=$('#sched'),bar=$('#nowbar');if(!box)return;
@@ -495,7 +505,9 @@ function renderSched(){
   const isDone=it=>it.kind==='x'?!!(l.sc&&l.sc[it.id]):it.kind==='meal'?!!l.m[it.id]:it.kind==='wo'?ex.length>0&&ex.every(e=>l.x[e.id]):null;
   const isToday=cur===TODAY(),d=new Date(),now=d.getHours()*60+d.getMinutes();
   const nextI=isToday?items.findIndex(it=>it.m>now):-1;
-  box.innerHTML=items.map((it,i)=>{const dn=isDone(it),ck=dn!==null;return `<div class="tl${dn?' ok':''}${i===nextI?' nx':''}${isToday&&it.m<=now&&dn===false?' miss':''}${ck?' tap':''}"${ck?` role="checkbox" tabindex="0" aria-checked="${!!dn}" data-tl="${it.kind}|${esc(it.id)}"`:''}><span class="tt">${hm(it.m)}</span><span>${esc(it.n)}</span>${dn?'<span class="tk">✓</span>':ck?'<span class="tc"></span>':'<span></span>'}</div>`}).join('')+'<p class="muted" style="margin:8px 0 0">Нажми на пункт, чтобы отметить, — даже если время уже прошло.</p>';
+  box.innerHTML=items.map((it,i)=>{const dn=isDone(it),ck=dn!==null;return `<div class="tl${dn?' ok':''}${i===nextI?' nx':''}${isToday&&it.m<=now&&dn===false?' miss':''}${ck?' tap':''}"${ck?` role="checkbox" tabindex="0" aria-checked="${!!dn}" data-tl="${it.kind}|${esc(it.id)}"`:''}><span class="tt">${hm(it.m)}</span><span>${esc(it.n)}</span>${dn?'<span class="tk">✓</span>':ck?'<span class="tc"></span>':'<span></span>'}</div>`}).join('')+(items.notes&&items.notes.length?items.notes.map(n=>`<div class="nb">${esc(n)}</div>`).join(''):'')
+    +(items.some(it=>it.kind==='wo')?'<p class="muted" style="margin:10px 0 0">Еда и тренировка: плотно поесть — за 2 часа до силовой, перекус — за 45 минут. После — белок в течение 1–2 часов.</p>':'')
+    +'<p class="muted" style="margin:8px 0 0">Нажми на пункт, чтобы отметить, — даже если время уже прошло.</p>';
   if(!isToday){bar.innerHTML='';return}
   const missed=items.filter(it=>(it.kind==='meal'||it.kind==='wo')&&it.m<=now&&isDone(it)===false),nx=nextI>=0?items[nextI]:null;
   bar.innerHTML=missed.length||nx?`<div class="nb" style="margin:0"><span>${missed.length?`<b>Не отмечено:</b> ${missed.map(it=>esc(it.n)+' ('+hm(it.m)+')').join(', ')}. `:''}${nx?`Дальше: <b>${esc(nx.n)}</b> в ${hm(nx.m)}${nx.m-now<=90?` — через ${nx.m-now} мин`:''}.`:''}</span></div>`:'';
