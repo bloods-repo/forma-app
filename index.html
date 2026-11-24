@@ -441,7 +441,8 @@ function render(){
   for(const v of['today','plan','food','hist','me'])$('#v-'+v).hidden=v!==view;
   document.querySelectorAll('.bnav button').forEach(b=>{const on=b.dataset.v===view;b.classList.toggle('on',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   if(view==='today')renderToday();else if(view==='plan')renderPlan();else if(view==='me')renderMe();else if(view==='food')renderFood();else renderHist();
-  if(ch){try{window.scrollTo(0,0)}catch(e){}if(!RM){const el=$('#v-'+view);el.classList.remove('enter');void el.offsetWidth;el.classList.add('enter');if(view==='today'){const h=$('#hero');h.classList.remove('enter');void h.offsetWidth;h.classList.add('enter')}}}
+  if(ch){try{window.scrollTo(0,0)}catch(e){}if(!RM){const els=[$('#v-'+view)];if(view==='today')els.push($('#hero'));
+    els.forEach(el=>{el.classList.remove('enter');void el.offsetWidth;el.classList.add('enter');clearTimeout(el._et);el._et=setTimeout(()=>el.classList.remove('enter'),650)})}}
 }
 
 /* ---------- события ---------- */
