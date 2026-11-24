@@ -251,13 +251,16 @@ function score(k){
 
 /* ---------- сохранение ---------- */
 let db=null,ref=null,timer=null;
+function touch(){const l=S.log[cur];if(l)l.u=Date.now()}
 function persist(){
+  S.upd=Date.now();
   try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}
+  try{queueSync()}catch(e){}
   if(!ref)return;
   clearTimeout(timer);$('#save').textContent='Сохраняю…';
   timer=setTimeout(async()=>{try{await ref.set({json:JSON.stringify(S)});$('#save').textContent='Сохранено ✓'}catch(e){$('#save').textContent='Сохранено на этом устройстве'}},700);
 }
-function changed(){checkBadges();checkLevel();persist();render()}
+function changed(){touch();checkBadges();checkLevel();persist();render()}
 
 /* ---------- Сегодня ---------- */
 function item(kind,e,on,dd,sub){if(dd===undefined)dd=e.d;const info=kind==='x'&&tech(e.n);return `<div class="it${on?' done':''}" role="checkbox" tabindex="0" aria-checked="${!!on}" data-k="${kind}" data-id="${esc(e.id)}"><span class="box"></span><span class="t">${esc(e.n)}${sub?`<small>${esc(sub)}</small>`:''}</span>${dd?`<span class="d">${esc(dd)}</span>`:''}${info?`<button class="qi" data-info="${esc(e.id)}" aria-label="Как делать: ${esc(e.n)}">?</button>`:''}</div>`}
@@ -399,7 +402,7 @@ document.addEventListener('submit',e=>{
   const inp=document.querySelector(`form[data-add="${k}"] input`);if(inp)inp.focus();
 });
 document.addEventListener('change',e=>{
-  if(e.target.id==='kg'){L(cur).kg=e.target.value.trim();persist();renderHero()}
+  if(e.target.id==='kg'){L(cur).kg=e.target.value.trim();touch();persist();renderHero()}
   if(e.target.id==='wgoal'){const v=Math.max(1,Math.min(20,parseInt(e.target.value)||8));S.plan.water=v;changed()}
 });
 ro=new ResizeObserver(()=>{if(view==='hist')drawWeight()});ro.observe(document.body);
@@ -530,7 +533,7 @@ function renderMe(){
     ${S.plan.meals.map(e=>`<div class="pl"><span class="t"><b>${esc(e.n)}</b> · ≈${fmtN(Math.round(n.kcal*sh[e.id]/10)*10)} ккал<br><span class="muted">${esc(plate(n,sh[e.id],true))}</span></span></div>`).join('')}
     <p class="muted">Ладонь ≈ 100–120 г готового мяса, рыбы или творога. Горсть ≈ 2–3 ложки готовой крупы или 1 картофелина. Большой палец ≈ 1 ч. л. масла или 10 г орехов.</p>
     <p class="muted">Это оценка по формуле Миффлина — Сан Жеора. Через 2–3 недели сверься с весом: если он не двигается в нужную сторону, убавь или прибавь 150 ккал. При болезнях сердца, суставов, диабете или беременности сначала обсуди план с врачом.</p>`
-    :`<h3>Что здесь появится</h3><p>Калории, белки, жиры и углеводы под твою цель, норма воды, размер порций «на ладонях» и распорядок дня: когда есть, когда тренироваться, когда ложиться.</p><p class="muted">Данные видишь только ты.</p>`}</div>${uiCard()}${bkCard()}</div>`;
+    :`<h3>Что здесь появится</h3><p>Калории, белки, жиры и углеводы под твою цель, норма воды, размер порций «на ладонях» и распорядок дня: когда есть, когда тренироваться, когда ложиться.</p><p class="muted">Данные видишь только ты.</p>`}</div>${svCard()}${uiCard()}${bkCard()}</div>`;
 }
 
 /* ---------- техника ---------- */
@@ -581,7 +584,7 @@ function woClose(){clearInterval(wi);try{W&&W.lock&&W.lock.release()}catch(e){}W
 function woDone(){
   const x=W.list[W.i];
   if(W.s+1<x.sets){W.s++;W.ph='rest';W.end=Date.now()+REST()*1000}
-  else{L(cur).x[x.e.id]=1;checkBadges();persist();W.i++;W.s=0;
+  else{L(cur).x[x.e.id]=1;touch();checkBadges();persist();W.i++;W.s=0;
     if(W.i>=W.list.length){W.ph='rate';beep(660,.15);setTimeout(()=>beep(990,.3),180)}
     else if(x.sec>=120||x.sets<2)W.ph='ready';
     else{W.ph='rest';W.end=Date.now()+Math.round(REST()*.75)*1000}}
@@ -663,7 +666,7 @@ document.addEventListener('click',e=>{
   if(t.dataset.info){openInfo(t.dataset.info);return}
   if(t.dataset.wo){woOpen();return}
   if(t.dataset.sh){shift(t.dataset.sh);return}
-  if(t.dataset.rate){const r=+t.dataset.rate;L(cur).r=r;checkBadges();persist();woClose();const a=advice();toast(a?a.m:['','Отлично! Если так и дальше — пора усложнять.','Хороший темп, так держать.','Ты справился — это главное. Отдыхай.'][r]);return}
+  if(t.dataset.rate){const r=+t.dataset.rate;L(cur).r=r;touch();checkBadges();persist();woClose();const a=advice();toast(a?a.m:['','Отлично! Если так и дальше — пора усложнять.','Хороший темп, так держать.','Ты справился — это главное. Отдыхай.'][r]);return}
   if(t.dataset.wa){if(t.dataset.wa==='close'||!W){woClose();return}
     const a=t.dataset.wa,x=W.list[W.i];
     if(a==='go'){W.ph='work';W.end=Date.now()+x.sec*1000;W.pause=0;lastS=-1}
@@ -844,7 +847,64 @@ function tlToggle(t){const[k,id]=t.dataset.tl.split('|'),l=L(cur);
   changed()}
 document.addEventListener('click',e=>{const t=e.target.closest('[data-tl]');if(t)tlToggle(t)});
 document.addEventListener('keydown',e=>{const t=e.target.closest&&e.target.closest('[data-tl]');if(t&&(e.key===' '||e.key==='Enter')){e.preventDefault();tlToggle(t)}});
+/* ---------- свой сервер: синхронизация и уведомления ---------- */
+const IN_CLAUDE=typeof window.claude!=='undefined';
+const SVK='forma-server';
+const SV=()=>{try{return JSON.parse(localStorage.getItem(SVK)||'null')}catch(e){return null}};
+let syncT=null,syncing=false,syncMsg='';
+function setSync(m){syncMsg=m;const e=$('#svst');if(e)e.textContent=m}
+async function api(p,b){const c=SV();if(!c||!c.url)throw Error('Сервер не указан');
+  const r=await fetch(c.url.replace(/\/+$/,'')+p,{method:b?'POST':'GET',headers:{'Authorization':'Bearer '+c.key,'Content-Type':'application/json','ngrok-skip-browser-warning':'1'},body:b?JSON.stringify(b):undefined});
+  if(r.status===401)throw Error('неверный ключ');if(!r.ok)throw Error('сервер ответил '+r.status);return r.json()}
+function buildRem(){const out=[],t=new Date();if(!S.prof)return out;const n=NUT(),sh=mealShares();
+  for(let dd=0;dd<2;dd++){const d=add(t,dd),k=key(d),base=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(),ex=S.plan.days[d.getDay()]||[],at=m=>base+Math.round(m)*60000;
+    for(const it of SCHED(k)){
+      if(it.kind==='wo'){const ids=ex.map(e=>e.id);
+        out.push({id:k+'|wo|pre',at:at(it.m-30),title:'Через 30 минут — '+(ex.length>2?'тренировка':it.n.toLowerCase()),body:ex.map(e=>e.n).slice(0,4).join(', '),chk:{d:k,k:'wo',ids}});
+        out.push({id:k+'|wo|late',at:at(it.m+120),title:'Тренировка ещё не отмечена',body:'Сделал — отметь. Нет — ещё не поздно хотя бы на 10 минут.',chk:{d:k,k:'wo',ids}})}
+      else if(it.kind==='meal')out.push({id:k+'|m|'+it.id,at:at(it.m),title:it.n+' · '+hm(it.m),body:n?`≈${fmtN(Math.round(n.kcal*sh[it.id]/10)*10)} ккал · ${plate(n,sh[it.id])}`:'Пора поесть — и отметь в приложении',chk:{d:k,k:'m',id:it.id}});
+      else if(it.id==='screen')out.push({id:k+'|x|screen',at:at(it.m),title:'Через 30 минут отбой',body:'Телефон в сторону, свет потише.',chk:{d:k,k:'x',id:'screen'}})}
+    const p=S.prof;if(p.sleep&&p.wake){let sl=tm(p.sleep);if(sl<=tm(p.wake))sl+=1440;out.push({id:k+'|water',at:at(sl-150),title:'Как с водой?',body:`Норма — ${S.plan.water} стаканов. Отметь, сколько выпил.`,chk:{d:k,k:'w',n:S.plan.water}})}}
+  return out.filter(r=>r.at>Date.now()-60000)}
+function queueSync(){if(!SV())return;clearTimeout(syncT);syncT=setTimeout(syncNow,1500)}
+async function syncNow(){const c=SV();if(!c||!c.url)return;if(syncing){queueSync();return}syncing=true;
+  try{if((S.ui||{}).push)S.rem=buildRem();const before=JSON.stringify(S);
+    const r=await api('/api/sync',{state:S});
+    if(r&&r.state&&r.state.log&&JSON.stringify(S)===before){const after=JSON.stringify(r.state);
+      if(after!==before){S=r.state;migrate();try{localStorage.setItem(LS,after)}catch(e){}render()}}
+    else queueSync();
+    setSync('Синхронизировано в '+hm(new Date().getHours()*60+new Date().getMinutes()))}
+  catch(e){setSync('Нет связи с сервером: '+e.message+'. Данные сохранены на телефоне.')}
+  finally{syncing=false}}
+const b64u=s=>{const b=atob((s+'='.repeat((4-s.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))};
+async function enablePush(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))throw Error('этот браузер не умеет уведомления — открой приложение в Chrome');
+  if(await Notification.requestPermission()!=='granted')throw Error('уведомления запрещены — разреши их в настройках Chrome для сайта');
+  const{key}=await api('/api/vapid');if(!key)throw Error('на сервере не установлен web-push');
+  const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
+  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(key)});
+  await api('/api/subscribe',{sub:sub.toJSON()});S.ui=Object.assign({},S.ui,{push:true});persist();await syncNow()}
+const svCard=()=>{if(IN_CLAUDE)return'';const c=SV()||{};return `<div class="card"><h3>Свой сервер</h3>
+  <p class="muted" style="margin-top:0">Синхронизация с ПК, уведомления и копии данных через старый телефон. Как настроить — в инструкции от Claude.</p>
+  <label class="lb">Адрес сервера<input type="url" id="svu" placeholder="https://имя.ngrok-free.app" value="${esc(c.url||'')}" autocomplete="off"></label>
+  <label class="lb" style="margin-top:8px">Ключ<input type="password" id="svk" value="${esc(c.key||'')}" autocomplete="off"></label>
+  <div class="row" style="margin-top:10px"><button class="btn" id="svgo">${c.url?'Сохранить и проверить':'Подключить'}</button>${c.url?'<button class="btn ghost" id="svoff">Отключить</button>':''}</div>
+  ${c.url?`<div class="row" style="margin-top:8px"><button class="btn ghost" id="svpush">${(S.ui||{}).push?'Обновить уведомления':'Включить уведомления'}</button><button class="btn ghost" id="svtest">Тест</button>${(S.ui||{}).push?'<button class="btn ghost" id="svpoff">Выключить</button>':''}</div>`:''}
+  <p class="muted" id="svst">${esc(syncMsg)}</p></div>`};
+document.addEventListener('click',async e=>{const t=e.target.closest('#svgo,#svoff,#svpush,#svtest,#svpoff');if(!t)return;
+  try{
+    if(t.id==='svgo'){let u=$('#svu').value.trim();const k=$('#svk').value.trim();if(!u||!k){setSync('Впиши адрес и ключ.');return}
+      if(!/^https?:\/\//.test(u))u='https://'+u;localStorage.setItem(SVK,JSON.stringify({url:u,key:k}));setSync('Проверяю…');await syncNow();renderMe();return}
+    if(t.id==='svoff'){localStorage.removeItem(SVK);syncMsg='Сервер отключён. Данные остались на телефоне.';renderMe();return}
+    if(t.id==='svpush'){setSync('Включаю…');await enablePush();renderMe();toast('Уведомления включены. Нажми «Тест», чтобы проверить.');return}
+    if(t.id==='svpoff'){S.ui=Object.assign({},S.ui,{push:false});S.rem=[];persist();await syncNow();renderMe();toast('Уведомления выключены');return}
+    if(t.id==='svtest'){const r=await api('/api/test',{});toast(r.sent?'Отправлено — уведомление придёт через пару секунд':'Нет подписанных устройств — сначала «Включить уведомления»');return}
+  }catch(er){setSync('Не получилось: '+er.message)}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncNow()});
+setInterval(()=>{if(document.visibilityState==='visible')syncNow()},120000);
+
 render();
+if(SV())syncNow();
 
 /* ---------- облако: свои данные у каждого, на всех устройствах ---------- */
 (async()=>{
