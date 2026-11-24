@@ -150,7 +150,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .wbtn.pri{background:linear-gradient(90deg,var(--acc),var(--acc2));color:var(--accInk)}.wbtn.big{height:64px;font-size:18px}
 .wclk{font-size:17px;color:#fff}.wtb{display:flex;gap:8px}.wo .x{display:grid;place-items:center}.wo .x svg{width:18px;height:18px;stroke:#fff;stroke-width:2.6;stroke-linecap:round;fill:none}
 .wo.paused .ex h2,.wo.paused .ex .num{opacity:.45;transition:opacity .3s}.wo.paused .ex small{color:#fff}
-.blobs{display:none}
+
 /* эффекты */
 #fx{position:fixed;inset:0;pointer-events:none;z-index:80}
 .rip{position:absolute;width:160px;height:160px;margin:-80px 0 0 -80px;border-radius:50%;border:2px solid var(--c,#5ee6a8);pointer-events:none}
@@ -183,8 +183,9 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .clouds i:nth-child(4){top:46%;width:100px;animation-duration:110s;animation-delay:-80s;opacity:.6}
 .clouds i:nth-child(5){top:24%;width:140px;animation-duration:130s;animation-delay:-20s;opacity:.5}
 @keyframes cloud{from{transform:translateX(-180px)}to{transform:translateX(560px)}}
-.rain{inset:-20% 0 0;opacity:var(--rn,0);background:repeating-linear-gradient(105deg,transparent 0 9px,#cfe3ff55 9px 10px,transparent 10px 22px);background-size:120px 120px;animation:rain .45s linear infinite;transition:opacity 1s}
-@keyframes rain{to{background-position:-30px 120px}}
+.rain{inset:0;opacity:var(--rn,0);transition:opacity 1s}
+.rain b{position:absolute;top:-24px;width:1.5px;border-radius:1px;background:linear-gradient(transparent,#d8e6ff99);animation:drop linear infinite}
+@keyframes drop{to{transform:translateY(260px)}}
 .snow{inset:0;opacity:var(--sn,0);background-image:radial-gradient(2px 2px at 20px 30px,#fff,transparent),radial-gradient(1.5px 1.5px at 80px 70px,#fff,transparent),radial-gradient(2px 2px at 140px 20px,#fffd,transparent),radial-gradient(1.5px 1.5px at 60px 110px,#fff,transparent),radial-gradient(2px 2px at 170px 90px,#fffc,transparent);background-size:190px 130px;animation:snow 9s linear infinite;transition:opacity 1s}
 .snow.s2{background-size:130px 110px;animation-duration:14s;opacity:calc(var(--sn,0)*.7)}
 @keyframes snow{to{background-position:30px 130px}}
@@ -193,45 +194,18 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 @keyframes bolt{0%,88%,92%,96%,100%{opacity:0}89%,93%{opacity:.55}}
 .scene::after{content:"";position:absolute;inset:0;background:#5b6475;opacity:var(--tint,0);mix-blend-mode:saturation;pointer-events:none}
 .wxrow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.wxrow button{height:40px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--mut)}.wxrow button.on{color:var(--ink);border-color:var(--acc)}
-@media(prefers-reduced-motion:reduce){.clouds i,.rain,.snow,.bolt{animation:none!important}}
+@media(prefers-reduced-motion:reduce){.clouds i,.rain b,.snow,.bolt{animation:none!important}}
 
-/* ===== Liquid Glass (тест) ===== */
-html.lg{background:#07080c}.lg body{background:transparent}
-.lg .blobs{display:block;position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-.lg .blobs i{position:absolute;width:62vmax;height:62vmax;border-radius:50%;filter:blur(70px);opacity:.55;animation:drift 24s ease-in-out infinite alternate}
-.lg .blobs i:nth-child(1){background:var(--acc);left:-22vmax;top:-18vmax}
-.lg .blobs i:nth-child(2){background:#4aa8ff;right:-28vmax;top:18vh;animation-duration:30s}
-.lg .blobs i:nth-child(3){background:var(--done);left:5vw;bottom:-34vmax;animation-duration:34s;opacity:.38}
-.lg .blobs i:nth-child(4){background:#b06bff;right:-14vmax;bottom:-12vmax;animation-duration:27s;opacity:.45}
-@keyframes drift{to{transform:translate(9vmax,7vmax) scale(1.15)}}
-.lg{--glass:linear-gradient(140deg,#ffffff26,#ffffff0a 45%,#ffffff12);--rim:inset 0 1px 0 #ffffff70,inset 0 -1px 0 #ffffff1a,inset 1px 0 0 #ffffff26,inset -1px 0 0 #ffffff12;--blur:blur(26px) saturate(190%)}
-.lg .now,.lg .it .fg,.lg .tile,.lg .rings,.lg .lvl,.lg .st3 div,.lg .heat,.lg .grp,.lg .seg,.lg .pals button,.lg .row2 button,.lg .hold,.lg .lv,.lg .rc{
-  background:radial-gradient(130% 70% at 15% -10%,#ffffff33,transparent 45%),var(--glass);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
-  border:1px solid #ffffff2a;box-shadow:var(--rim),0 14px 34px -16px #000c}
-.lg .rc{background-blend-mode:overlay}
-.lg .it{background:transparent}.lg .it .bgl{display:none}
-.lg .it .fg.drag{box-shadow:var(--rim),0 0 0 2px color-mix(in srgb,var(--done) 70%,transparent),0 14px 34px -16px #000c}
-.lg .hd{background:linear-gradient(#07080c8c,transparent)}.lg .row2 button{color:#fff}.lg .now p,.lg .it .tx small{color:#ffffffb8}
-.lg .sky{box-shadow:inset 0 1px 0 #ffffff90,inset 0 0 0 1px #ffffff30,0 24px 50px -24px #000;border-radius:32px}
-.lg .sky::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(170deg,#ffffff38,transparent 30%,transparent 70%,#ffffff14)}
-.lg .tb{background:radial-gradient(120% 90% at 20% -20%,#ffffff38,transparent 50%),linear-gradient(140deg,#ffffff1f,#ffffff08);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);border:1px solid #ffffff33;border-radius:34px;box-shadow:var(--rim),0 18px 40px -14px #000d}
-.lg .tb>button.on{background:#ffffff22;border-radius:22px;box-shadow:inset 0 1px 0 #ffffff55;color:#fff}.lg .tb>button.on::after{display:none}
-.lg .fab{background:radial-gradient(circle at 32% 24%,#ffffffb0,transparent 38%),linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:inset 0 2px 1px #ffffff90,inset 0 -6px 12px #0003,0 0 0 1px #ffffff40,0 12px 28px -6px var(--acc)}
-.lg .now:active,.lg .tile:active,.lg .row2 button:active,.lg .pals button:active{transform:scale(.97)}
-.lg .now,.lg .tile,.lg .row2 button{transition:transform .35s var(--spring)}
-.lg .hold i{opacity:.9}.lg .seg button.on{background:#ffffff26;box-shadow:inset 0 1px 0 #ffffff55}
-.lg .lvl{background:radial-gradient(130% 70% at 15% -10%,#ffffff33,transparent 45%),linear-gradient(140deg,color-mix(in srgb,var(--acc) 30%,#ffffff10),#ffffff08)}
-.lg .wo{background:radial-gradient(120% 80% at 50% 0%,color-mix(in srgb,var(--acc) 35%,#07080c),#07080cf0 60%);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px)}
-.lg .wbtn{background:radial-gradient(130% 80% at 20% -20%,#ffffff33,transparent 50%),#ffffff14;box-shadow:var(--rim)}
-.lg .wbtn.pri{background:radial-gradient(130% 80% at 20% -20%,#ffffff70,transparent 50%),linear-gradient(90deg,var(--acc),var(--acc2))}
-.lg .toast{background:#ffffffd9;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:var(--rim),0 10px 30px #0006}
-@media(prefers-reduced-motion:reduce){.lg .blobs i{animation:none}}
+/* Liquid Glass — только нижняя панель */
+.tb{background:radial-gradient(120% 90% at 20% -20%,#ffffff38,transparent 50%),linear-gradient(140deg,#ffffff1f,#ffffff08);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);border:1px solid #ffffff33;border-radius:34px;
+  box-shadow:inset 0 1px 0 #ffffff70,inset 0 -1px 0 #ffffff1a,inset 1px 0 0 #ffffff26,inset -1px 0 0 #ffffff12,0 18px 40px -14px #000d}
+.tb>button.on{background:#ffffff22;border-radius:22px;box-shadow:inset 0 1px 0 #ffffff55;color:#fff}.tb>button.on::after{display:none}
+.tb .fab{background:radial-gradient(circle at 32% 24%,#ffffffb0,transparent 38%),linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:inset 0 2px 1px #ffffff90,inset 0 -6px 12px #0003,0 0 0 1px #ffffff40,0 12px 28px -6px var(--acc)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.wo{clip-path:none}}
 @media(min-width:700px){.app{padding-top:10px}}
 </style>
 </head>
 <body>
-<div class="blobs" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 <div class="app">
   <p class="demo">Тестовая версия дизайна · данные примерные</p>
   <header class="hd">
@@ -247,7 +221,7 @@ html.lg{background:#07080c}.lg body{background:transparent}
         <i class="moon"></i><i class="glow"></i>
         <div class="clouds"><i></i><i></i><i></i><i></i><i></i></div>
         <svg class="hills" viewBox="0 0 400 90" preserveAspectRatio="none"><path class="h1" d="M0 52 C40 30 80 34 120 46 S200 20 250 34 S330 50 400 28 V90 H0Z"/><path class="h2" d="M0 70 C50 56 90 62 140 68 S220 50 280 60 S360 72 400 58 V90 H0Z"/></svg>
-        <i class="rain"></i><i class="snow"></i><i class="snow s2"></i><i class="fog"></i><i class="bolt"></i>
+        <i class="rain" id="rain"></i><i class="snow"></i><i class="snow s2"></i><i class="fog"></i><i class="bolt"></i>
       </div>
       <div class="top"><span id="wxT">Твой день</span><b id="skyT">14:20</b></div>
       <svg class="arc" id="arc" viewBox="0 0 340 178" aria-label="Дуга дня"></svg>
@@ -303,8 +277,6 @@ html.lg{background:#07080c}.lg body{background:transparent}
     <div class="sec"><h3>Погода на фоне</h3><small id="wxS"></small></div>
     <div class="grp"><div><span style="color:var(--ink)">По моему месту</span><button class="wbtn" id="wxPos" style="height:38px;padding:0 14px;font-size:14px;background:var(--card2)">Разрешить</button></div></div>
     <div class="wxrow" id="wxRow" style="margin-top:10px"></div>
-    <div class="sec"><h3>Стиль</h3><small>для теста</small></div>
-    <div class="seg" id="styles" style="grid-template-columns:repeat(2,minmax(0,1fr))"><button data-st="base">Обычный</button><button data-st="lg">Liquid Glass</button></div>
     <p class="hint">Остальные настройки в тестовой версии только для вида</p>
   </section>
 </div>
@@ -603,15 +575,13 @@ document.addEventListener('click',e=>{const pb=e.target.closest('[data-pal]');if
     const r=pb.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,0,[PALS[pal][1]]);SND.done();buzz(8);return}
   const kb=e.target.closest('[data-pk]');if(kb){const k=kb.dataset.pk;if(k==='off'){soundOn=false}else{soundOn=true;pack=k;try{localStorage.setItem('fd-pack',k)}catch(_){}}
     try{localStorage.setItem('fd-sound',soundOn?'1':'0')}catch(_){}sndIcon();drawPrefs();if(soundOn)click()}});
-let vstyle='base';try{vstyle=localStorage.getItem('fd-style')||'base'}catch(e){}
-function applyStyle(){document.documentElement.classList.toggle('lg',vstyle==='lg');document.querySelectorAll('#styles button').forEach(b=>b.classList.toggle('on',b.dataset.st===vstyle))}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-st]');if(!b)return;vstyle=b.dataset.st;try{localStorage.setItem('fd-style',vstyle)}catch(_){}applyStyle();SND.tap();buzz(8)});
-applyStyle();drawPrefs();
+drawPrefs();try{localStorage.removeItem('fd-style')}catch(e){}
 function drawWx(){const opts=[['auto','Авто'],['clear','Ясно'],['partly','Облака'],['cloudy','Пасмурно'],['rain','Дождь'],['snow','Снег'],['storm','Гроза'],['fog','Туман']];
   $('#wxRow').innerHTML=opts.map(([k,t])=>`<button data-wx="${k}" class="${wxMode===k?'on':''}">${t}</button>`).join('');
   let pos=null;try{pos=JSON.parse(localStorage.getItem('fd-pos')||'null')}catch(e){}$('#wxS').textContent=pos?'по месту':'место не задано';$('#wxPos').textContent=pos?'Обновить':'Разрешить'}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-wx]');if(b&&b.closest('#wxRow')){wxMode=b.dataset.wx;try{localStorage.setItem('fd-wx',wxMode)}catch(_){}drawWx();sky();SND.tap();return}
   if(e.target.closest('#wxPos'))askPos()});
+(()=>{let h='';for(let i=0;i<26;i++){const l=Math.random()*100,len=8+Math.random()*8,d=(.55+Math.random()*.45).toFixed(2),dl=(-Math.random()*2).toFixed(2),o=(.35+Math.random()*.5).toFixed(2);h+=`<b style="left:${l.toFixed(1)}%;height:${len.toFixed(0)}px;animation-duration:${d}s;animation-delay:${dl}s;opacity:${o}"></b>`}$('#rain').innerHTML=h})();
 drawWx();fetchWx();setInterval(fetchWx,30*60e3);
 sky();drawLv();render();setInterval(()=>{sky();arc()},60000);
 }
