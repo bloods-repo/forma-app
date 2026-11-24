@@ -196,6 +196,53 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .wxrow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.wxrow button{height:40px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--mut)}.wxrow button.on{color:var(--ink);border-color:var(--acc)}
 @media(prefers-reduced-motion:reduce){.clouds i,.rain b,.snow,.bolt{animation:none!important}}
 
+/* прогресс */
+.pg-hero{display:flex;gap:18px;align-items:center;background:radial-gradient(120% 120% at 0% 0%,color-mix(in srgb,var(--acc) 26%,var(--card)),var(--card) 60%);border:1px solid var(--line);border-radius:26px;padding:18px}
+.pg-ring{position:relative;width:128px;flex:none;aspect-ratio:1}.pg-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.pg-ring circle{fill:none;stroke-width:12;stroke-linecap:round}.pg-ring .t{stroke:var(--line)}.pg-ring .p{stroke-dasharray:377;stroke-dashoffset:377;transition:stroke-dashoffset 1.2s var(--ease);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--acc) 60%,transparent))}
+.pg-ring>div{position:absolute;inset:0;display:grid;place-content:center;text-align:center}.pg-ring b{font-size:44px;line-height:1}.pg-ring small{color:var(--mut);font-size:12px;font-weight:600}
+.pg-info{display:grid;gap:3px}.pg-info>b{font-size:24px;font-weight:800;letter-spacing:-.01em}.pg-info>span{font-size:16px}.pg-info>small{color:var(--mut);font-size:13px}
+.chip{display:inline-flex;align-items:center;gap:6px;margin-top:8px;justify-self:start;padding:6px 12px 6px 8px;border-radius:999px;background:#ff8a3d22;color:#ffb27a;font-size:13px;font-weight:700}
+.chip svg{width:18px;height:18px;fill:#ff8a3d}
+.card2{margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.hrow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}.hrow h3{margin:0;font-size:17px;font-weight:800}.hrow small{color:var(--mut);font-size:13px}.hrow small b{color:var(--ink)}
+.wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;height:120px;align-items:end}
+.wk div{display:grid;grid-template-rows:1fr auto;gap:6px;height:100%;text-align:center}
+.wk i{align-self:end;display:block;border-radius:10px;background:var(--card2);position:relative;overflow:hidden;height:100%}
+.wk i b{position:absolute;left:0;right:0;bottom:0;height:0;border-radius:10px;background:linear-gradient(var(--acc2),var(--acc));transition:height .9s var(--spring)}
+.wk i b.full{background:linear-gradient(#a6f5cf,var(--done))}
+.wk span{font-size:12px;color:var(--mut);font-weight:600}.wk .tod span{color:var(--ink)}.wk .tod i{outline:2px solid var(--acc);outline-offset:2px}.wk .fut i{opacity:.4}
+.st4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.st4 div{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;display:grid}.st4 small{color:var(--mut);font-size:13px;font-weight:600}.st4 b{font-size:32px;line-height:1.1;margin-top:6px}.st4 em{font-style:normal;color:var(--mut);font-size:12px}
+.wchart{position:relative;height:150px}.wchart svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.near{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:2px 16px 4px;scrollbar-width:none}.near::-webkit-scrollbar{display:none}
+.nc{flex:0 0 72%;scroll-snap-align:start;display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px 14px;text-align:left}
+.nc .md{width:52px;flex:none}.nc b{display:block;font-weight:800;font-size:15px}.nc small{color:var(--mut);font-size:12px}
+.pb{height:6px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}.pb i{display:block;height:100%;border-radius:3px;background:var(--acc);transition:width .9s var(--ease)}
+.ach{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.at{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 8px 12px;display:grid;justify-items:center;gap:6px;text-align:center;transition:transform .25s var(--spring)}
+.at:active{transform:scale(.95)}.at b{font-size:13px;font-weight:700;line-height:1.2}.at small{font-size:11px;color:var(--mut);font-weight:600}
+.at .pb{width:80%;margin-top:0}
+.md{position:relative;width:64px;aspect-ratio:1}.md svg{width:100%;height:100%;overflow:visible}
+.at.got .md{animation:medalIn .6s var(--spring) backwards}
+@keyframes medalIn{from{transform:scale(.6) rotate(-12deg);opacity:0}}
+.at.lock{opacity:.9}.at.lock b{color:var(--mut)}
+.recs{display:grid;gap:8px}.recs div{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
+.recs span{flex:1;font-weight:600}.recs b{font-size:20px}.recs em{font-style:normal;font-size:12px;font-weight:800;color:var(--done);background:color-mix(in srgb,var(--done) 15%,transparent);padding:3px 8px;border-radius:999px}
+/* карточка достижения */
+.sheetbg{position:fixed;inset:0;z-index:55;background:#0009;opacity:0;pointer-events:none;transition:opacity .3s}
+.sheetbg.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:50%;bottom:0;z-index:56;width:min(480px,100%);transform:translate(-50%,105%);transition:transform .45s var(--spring);background:var(--card);border:1px solid var(--line);border-radius:30px 30px 0 0;padding:14px 22px calc(26px + env(safe-area-inset-bottom));text-align:center}
+.sheet.on{transform:translate(-50%,0)}
+.sheet .grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 14px}
+.sheet .md{width:120px;margin:4px auto 10px}.sheet.on .md.got{animation:medalBig .9s var(--spring)}
+@keyframes medalBig{0%{transform:scale(.5) rotate(-25deg)}60%{transform:scale(1.08) rotate(6deg)}100%{transform:none}}
+.sheet h2{margin:0;font-size:24px;font-weight:800}.sheet p{color:var(--mut);margin:6px 0 14px}
+.sheet .rar{display:inline-block;font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px;margin-bottom:6px}
+.sheet .pb{height:10px;border-radius:5px;margin:8px 0}
+.sheet .meta2{display:flex;justify-content:space-between;color:var(--mut);font-size:13px}
+.sheet button.close{margin-top:16px;width:100%;height:52px;border-radius:16px;background:var(--card2);font-weight:800}
+
 /* Liquid Glass — только нижняя панель */
 .tb{background:radial-gradient(120% 90% at 20% -20%,#ffffff38,transparent 50%),linear-gradient(140deg,#ffffff1f,#ffffff08);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);border:1px solid #ffffff33;border-radius:34px;
   box-shadow:inset 0 1px 0 #ffffff70,inset 0 -1px 0 #ffffff1a,inset 1px 0 0 #ffffff26,inset -1px 0 0 #ffffff12,0 18px 40px -14px #000d}
@@ -258,8 +305,29 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   <!-- ПРОГРЕСС -->
   <section class="scr" id="s-prog">
     <h1 class="ttl">Прогресс</h1>
-    <div class="lvl"><div class="bn num" id="pLv">3</div><div style="flex:1"><b>Упорный</b><div class="xpb"><i id="pXp" style="width:0"></i></div><small id="pXpT">180 / 300 XP</small></div></div>
-    <div class="st3"><div><span class="num">6</span><small>дней подряд</small></div><div><span class="num">78%</span><small>за 30 дней</small></div><div><span class="num">−1,8</span><small>кг с начала</small></div></div>
+    <div class="pg-hero">
+      <div class="pg-ring"><svg viewBox="0 0 140 140"><defs><linearGradient id="xpg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--acc)"/><stop offset="1" stop-color="var(--acc2)"/></linearGradient></defs><circle cx="70" cy="70" r="60" class="t"/><circle cx="70" cy="70" r="60" class="p" id="pgArc" stroke="url(#xpg)"/></svg><div><b class="num" id="pgLv">3</b><small>уровень</small></div></div>
+      <div class="pg-info"><b id="pgName">Упорный</b><span class="num" id="pgXp">120 / 300 XP</span><small id="pgNext">ещё 180 XP до «Крепкий»</small>
+        <span class="chip"><svg viewBox="0 0 24 24"><path d="M12 3c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 0-8z"/></svg><b class="num">6</b> дней подряд</span></div>
+    </div>
+    <div class="card2"><div class="hrow"><h3>Эта неделя</h3><small>в среднем <b class="num" id="wkAvg">0%</b></small></div><div class="wk" id="wk"></div></div>
+    <div class="st4">
+      <div><small>Тренировок</small><b class="num">7</b><em>за ноябрь</em></div>
+      <div><small>Лучшая серия</small><b class="num">9</b><em>дней</em></div>
+      <div><small>Выполнение</small><b class="num">78%</b><em>за 30 дней</em></div>
+      <div><small>Вес</small><b class="num" style="color:var(--done)">−1,8</b><em>кг с начала</em></div>
+    </div>
+    <div class="card2"><div class="hrow"><h3>Вес</h3><small><b class="num">89,4</b> кг · цель 85</small></div><div class="wchart"><svg id="wsvg"></svg></div></div>
+    <div class="sec"><h3>Достижения</h3><small id="achCnt"></small></div>
+    <div class="near" id="near"></div>
+    <div class="seg" id="achF" style="grid-template-columns:repeat(3,minmax(0,1fr));margin:12px 0 10px"><button data-af="all" class="on">Все</button><button data-af="got">Получены</button><button data-af="todo">В процессе</button></div>
+    <div class="ach" id="ach"></div>
+    <div class="sec"><h3>Рекорды</h3><small>проверка раз в 2 недели</small></div>
+    <div class="recs">
+      <div><span>Отжимания подряд</span><b class="num">14</b><em>+6</em></div>
+      <div><span>Планка</span><b class="num">55 с</b><em>+25 с</em></div>
+      <div><span>Приседания за минуту</span><b class="num">32</b><em>+9</em></div>
+    </div>
     <div class="sec"><h3>5 недель</h3><small>ярче — больше сделано</small></div>
     <div class="heat" id="heat"></div>
   </section>
@@ -295,6 +363,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   <div class="ex" id="woBody"></div>
   <div class="acts" id="woActs"></div>
 </div>
+<div class="sheetbg" id="sheetbg"></div><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Достижение"></div>
 <div id="fx"></div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -406,7 +475,7 @@ function addXP(v,el){xp+=v;if(el){const r=el.getBoundingClientRect();floatXP(r.l
   while(lvl<LV.length-1&&xp>=LV[lvl]){lvl++;setTimeout(()=>{confetti(cv('--acc'));SND.level();const l=$('#lvBtn');l.classList.remove('pulse');void l.offsetWidth;l.classList.add('pulse');toast('Новый уровень '+lvl+'!');buzz([20,40,20])},500)}
   drawLv()}
 function drawLv(){const a=LV[lvl-1]||0,b=LV[lvl]||a+500,k=(xp-a)/(b-a);$('#lvP').style.strokeDashoffset=(125.7*(1-k)).toFixed(1);$('#lvN').textContent=lvl;
-  $('#pLv').textContent=lvl;$('#pXp').style.width=Math.round(k*100)+'%';$('#pXpT').textContent=`${xp-a} / ${b-a} XP до уровня ${lvl+1}`}
+  if(typeof cur!=='undefined'&&cur==='prog')renderProg()}
 
 /* --- небо по времени суток --- */
 /* погода: автоматически (Open-Meteo по разрешённому месту) или вручную для теста */
@@ -504,12 +573,74 @@ $('#car').innerHTML=RC.map(([n,m,a,b])=>`<div class="rc" style="background:linea
 /* --- прогресс --- */
 function heat(){let h='';for(let i=34;i>=0;i--){const v=i===0?done.size/TASKS.length:[.9,.7,1,.4,.8,0,.95,.6,1,.85][i%10];h+=`<i class="${i===0?'t':''}" style="background:${v?`color-mix(in srgb,var(--done) ${Math.round(15+v*85)}%,#262c3d)`:'#262c3d'}"></i>`}$('#heat').innerHTML=h}
 
+/* --- прогресс и достижения --- */
+const LVN=['Новичок','Разогретый','Упорный','Крепкий','Спортивный','Выносливый','Сильный','Атлет'];
+const RAR={c:['Обычное','#9fd0ff','#4f7fb8'],r:['Редкое','var(--acc)','var(--acc2)'],e:['Эпическое','#c084fc','#f5b84a']};
+const GL={dumb:'M5 9v6M19 9v6M2.5 10.5v3M21.5 10.5v3M5 12h14',flame:'M12 3c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 0-8z',leaf:'M5 19c0-8 6-13 14-14-1 8-6 14-14 14zM5 19l7-7',drop:'M12 3.5c3 4 6 7.2 6 10.5a6 6 0 0 1-12 0c0-3.3 3-6.5 6-10.5z',moon:'M18 14.5A7 7 0 0 1 9.5 6a7 7 0 1 0 8.5 8.5z',star:'M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z',scale:'M5 20h14l-1.5-11h-11zM9 9a3 3 0 0 1 6 0M12 9l1.5-2',trophy:'M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8',bolt:'M13 3L5 13h6l-1 8 8-10h-6z',sun:'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4'};
+const ACH=[
+ ['first','Первый шаг','Закончи первую тренировку','dumb','c',1,1,'12 ноября'],['w10','Десятка','10 тренировок','dumb','c',7,10],['w25','Четверть сотни','25 тренировок','dumb','r',7,25],['w50','Полсотни','50 тренировок','dumb','e',7,50],
+ ['s3','Разгон','3 дня подряд','flame','c',3,3,'16 ноября'],['s7','Неделя огня','7 дней подряд','flame','r',6,7],['s30','Месяц без пропусков','30 дней подряд','flame','e',6,30],
+ ['prot','Белковый день','Норма белка за день','leaf','c',1,1,'18 ноября'],['sweet','Без сладкого','7 дней без сладкого','leaf','r',4,7],['chef','Повар','Приготовь 5 рецептов','leaf','c',2,5],
+ ['water1','Первая норма','Выпей норму воды за день','drop','c',1,1,'13 ноября'],['water7','Водный баланс','Норма воды 7 дней подряд','drop','r',5,7],
+ ['sleep7','Режим','7+ часов сна 7 ночей подряд','moon','r',3,7],
+ ['kg1','Первый килограмм','Минус 1 кг к цели','scale','c',1,1,'21 ноября'],['kg5','Минус пять','Минус 5 кг к цели','scale','e',1.8,5],
+ ['rec','Новый рекорд','Побей личный рекорд','trophy','c',1,1,'22 ноября'],['early','Ранняя пташка','Тренировка до 8:00','sun','r',0,1],
+ ['perfect','Идеальная неделя','Все дела 7 дней подряд','star','e',0,7],['st2','Этап 2','Дойди до этапа «Привыкание»','bolt','r',0,1],['lvl5','Спортивный','Достигни 5 уровня','bolt','e',3,5]];
+let achF='all';
+function medal(a,big){const[id,,,g,rr,v,mx]=a,got=v>=mx,[,c1,c2]=RAR[rr],uid=id+(big?'B':'');
+  const hex='M32 3l25 14.5v29L32 61 7 46.5v-29z';
+  return `<div class="md${got?' got':''}"><svg viewBox="0 0 64 64"><defs><linearGradient id="g${uid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:${got?c1:'#2a3042'}"/><stop offset="1" style="stop-color:${got?c2:'#1b2030'}"/></linearGradient></defs>
+    ${got?`<path d="${hex}" style="fill:${c1}" opacity=".25" transform="translate(32 32) scale(1.12) translate(-32 -32)"/>`:''}
+    <path d="${hex}" fill="url(#g${uid})" stroke="${got?'#ffffff55':'#3a4258'}" stroke-width="1.5"/>
+    ${got?`<path d="M14 18L32 7.5 50 18" fill="none" stroke="#ffffff66" stroke-width="2" stroke-linecap="round"/>`:''}
+    <g transform="translate(20 20)"><path d="${GL[g]}" fill="${g==='flame'||g==='drop'||g==='star'||g==='bolt'||g==='moon'?(got?'#fff':'#59627a'):'none'}" stroke="${got?'#fff':'#59627a'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="scale(1)"/></g>
+    ${!got&&v===0?`<g transform="translate(44 44)"><circle r="9" fill="#141821" stroke="#3a4258"/><path d="M-3.5 0v-2a3.5 3.5 0 0 1 7 0v2M-4.5 0h9v5.5h-9z" fill="none" stroke="#8f97ad" stroke-width="1.5" stroke-linejoin="round"/></g>`:''}
+  </svg></div>`}
+const fmtP=(v,mx)=>Number.isInteger(v)?`${v} / ${mx}`:`${String(v).replace('.',',')} / ${mx}`;
+function renderProg(){const a=LV[lvl-1]||0,b=LV[lvl]||a+500,k=(xp-a)/(b-a);
+  $('#pgLv').textContent=lvl;$('#pgName').textContent=LVN[lvl-1]||'Легенда';$('#pgXp').textContent=`${xp-a} / ${b-a} XP`;$('#pgNext').textContent=`ещё ${b-xp} XP до «${LVN[lvl]||'Легенда'}»`;
+  const arc=$('#pgArc');arc.style.strokeDashoffset=377;requestAnimationFrame(()=>requestAnimationFrame(()=>arc.style.strokeDashoffset=(377*(1-k)).toFixed(1)));
+  const D=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],t=(new Date().getDay()+6)%7,vals=[1,.85,.6,1,.9,.4,.7].map((v,i)=>i===t?done.size/TASKS.length:i>t?0:v);
+  $('#wk').innerHTML=D.map((d,i)=>`<div class="${i===t?'tod':i>t?'fut':''}"><i><b data-h="${Math.round(vals[i]*100)}" class="${vals[i]>=1?'full':''}"></b></i><span>${d}</span></div>`).join('');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('#wk b').forEach((b,i)=>setTimeout(()=>b.style.height=b.dataset.h+'%',i*60))));
+  const past=vals.slice(0,t+1);$('#wkAvg').textContent=Math.round(past.reduce((x,y)=>x+y,0)/past.length*100)+'%';
+  const got=ACH.filter(x=>x[5]>=x[6]);$('#achCnt').textContent=`${got.length} из ${ACH.length}`;
+  const near=ACH.filter(x=>x[5]<x[6]&&x[5]>0).sort((p,q)=>q[5]/q[6]-p[5]/p[6]).slice(0,4);
+  $('#near').innerHTML=near.map(x=>`<button class="nc" data-ach="${x[0]}">${medal(x)}<span style="flex:1"><b>${x[1]}</b><small>${fmtP(x[5],x[6])} · ${x[2].toLowerCase()}</small><div class="pb"><i style="width:0" data-w="${Math.round(x[5]/x[6]*100)}"></i></div></span></button>`).join('');
+  drawAch();drawWeight();heat();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('#s-prog .pb i[data-w]').forEach(i=>i.style.width=i.dataset.w+'%')))}
+function drawAch(){const L=ACH.filter(x=>achF==='all'||(achF==='got'?x[5]>=x[6]:x[5]<x[6])).sort((p,q)=>(q[5]>=q[6])-(p[5]>=p[6]));
+  $('#ach').innerHTML=L.map((x,i)=>{const g=x[5]>=x[6];return `<button class="at ${g?'got':'lock'}" data-ach="${x[0]}" style="animation-delay:${i*30}ms">${medal(x)}<b>${x[1]}</b>${g?`<small>${x[7]}</small>`:`<div class="pb"><i style="width:${Math.round(x[5]/x[6]*100)}%"></i></div><small>${fmtP(x[5],x[6])}</small>`}</button>`}).join('');
+  document.querySelectorAll('#achF button').forEach(b=>b.classList.toggle('on',b.dataset.af===achF))}
+function drawWeight(){const s=$('#wsvg');if(!s)return;const W=s.clientWidth||340,H=s.clientHeight||150,pad=8;
+  const pts=[91.2,91.0,91.1,90.8,90.6,90.7,90.4,90.3,90.5,90.1,90.0,89.9,90.0,89.8,89.7,89.9,89.6,89.5,89.6,89.4];const G=85,mn=84.5,mx=91.6;
+  const x=i=>pad+i*(W-pad*2)/(pts.length-1),y=v=>10+(mx-v)/(mx-mn)*(H-30);
+  let d='';pts.forEach((v,i)=>{if(!i){d=`M${x(0)} ${y(v)}`;return}const px=x(i-1),py=y(pts[i-1]),cx=(px+x(i))/2;d+=` C${cx} ${py} ${cx} ${y(v)} ${x(i)} ${y(v)}`});
+  s.innerHTML=`<defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--acc)" stop-opacity=".35"/><stop offset="1" stop-color="var(--acc)" stop-opacity="0"/></linearGradient></defs>
+  <line x1="${pad}" x2="${W-pad}" y1="${y(G)}" y2="${y(G)}" stroke="var(--done)" stroke-dasharray="4 5" stroke-width="1.5"/><text x="${W-pad}" y="${y(G)-6}" text-anchor="end" fill="var(--done)" font-size="11" font-weight="700">цель 85</text>
+  <path d="${d} L${x(pts.length-1)} ${H} L${x(0)} ${H}Z" fill="url(#wg)"/><path id="wline" d="${d}" fill="none" stroke="var(--acc)" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="${x(pts.length-1)}" cy="${y(pts[pts.length-1])}" r="5" fill="var(--acc)" stroke="var(--card)" stroke-width="2"/>
+  <text x="${pad}" y="${H-2}" fill="var(--mut)" font-size="11">4 нед. назад</text><text x="${W-pad}" y="${H-2}" fill="var(--mut)" font-size="11" text-anchor="end">сегодня</text>`;
+  const ln=$('#wline');if(ln&&!RM){const L=ln.getTotalLength();ln.style.strokeDasharray=L;ln.style.strokeDashoffset=L;ln.getBoundingClientRect();ln.style.transition='stroke-dashoffset 1.2s ease';ln.style.strokeDashoffset=0}}
+new ResizeObserver(()=>{if(cur==='prog')drawWeight()}).observe(document.body);
+function openAch(id){const x=ACH.find(a=>a[0]===id);if(!x)return;const g=x[5]>=x[6],[rn,c1]=RAR[x[4]];
+  $('#sheet').innerHTML=`<div class="grab"></div>${medal(x,1)}<span class="rar" style="color:${c1};background:color-mix(in srgb,${c1} 15%,transparent)">${rn}</span><h2>${x[1]}</h2><p>${x[2]}</p>
+    ${g?`<div class="meta2"><span>Получено ${x[7]}</span><span>+${x[4]==='e'?300:x[4]==='r'?150:50} XP</span></div>`:`<div class="pb"><i style="width:0" data-w="${Math.round(x[5]/x[6]*100)}"></i></div><div class="meta2"><span>${fmtP(x[5],x[6])}</span><span>награда +${x[4]==='e'?300:x[4]==='r'?150:50} XP</span></div>`}
+    <button class="close" id="shClose">Закрыть</button>`;
+  $('#sheetbg').classList.add('on');$('#sheet').classList.add('on');SND.tap();buzz(8);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{const i=$('#sheet .pb i');if(i)i.style.width=i.dataset.w+'%'}));
+  $('#shClose').onclick=closeAch}
+function closeAch(){$('#sheetbg').classList.remove('on');$('#sheet').classList.remove('on')}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-ach]');if(a){openAch(a.dataset.ach);return}
+  const f=e.target.closest('[data-af]');if(f){achF=f.dataset.af;drawAch();SND.tap()}
+  if(e.target.id==='sheetbg')closeAch()});
+
 /* --- навигация --- */
 const ORDER=['today','food','prog','me'];let cur='today';
 document.querySelectorAll('.tb>button[data-s]').forEach(b=>b.onclick=()=>{const to=b.dataset.s;if(to===cur)return;const back=ORDER.indexOf(to)<ORDER.indexOf(cur);cur=to;
   document.querySelectorAll('.tb>button[data-s]').forEach(x=>x.classList.toggle('on',x===b));
   document.querySelectorAll('.scr').forEach(s=>{s.classList.remove('on','l')});const s=$('#s-'+to);s.classList.add('on');if(back)s.classList.add('l');
-  scrollTo({top:0});buzz(5);SND.tap();if(to==='food')rings();if(to==='prog'){heat();drawLv()}});
+  scrollTo({top:0});buzz(5);SND.tap();if(to==='food')rings();if(to==='prog'){drawLv();renderProg()}});
 
 /* --- тренировка --- */
 const EX=[{n:'Разминка',sec:300,tip:'Суставы и ходьба на месте',sets:1},{n:'Приседания',reps:12,tip:'Таз назад, колени над носками',sets:2},{n:'Отжимания от стола',reps:8,tip:'Тело — прямая линия',sets:2},
@@ -565,7 +696,7 @@ function woDraw(){if(!W)return;
   $('#woActs').innerHTML=`<button class="hold" id="woHold"><i></i><span>Удерживай — сделал</span></button><button class="sec2" id="woSkip">Пропустить</button>`;
   bindHold($('#woHold'),()=>{const r=$('#woHold').getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,0,['#ffffff']);if(W.paused)togglePause();setTimeout(finishSet,300)});
   $('#woSkip').onclick=()=>{W.i++;W.set=1;SND.tap();if(W.i>=EX.length){W.ph='done'}woDraw()}}
-addEventListener('keydown',e=>{if(e.key==='Escape'&&W)closeWo();if(e.key===' '&&W&&!e.target.closest('button'))togglePause()});
+addEventListener('keydown',e=>{if(e.key==='Escape')closeAch();if(e.key==='Escape'&&W)closeWo();if(e.key===' '&&W&&!e.target.closest('button'))togglePause()});
 
 /* --- старт --- */
 
