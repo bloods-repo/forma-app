@@ -141,6 +141,7 @@ input[type=time]{min-height:44px;border:1px solid var(--line);background:var(--b
 .rcp summary b{font-size:17px}.rcp summary::after{content:"Рецепт ▾";color:var(--red);font-size:14px;font-weight:700}.rcp[open] summary::after{content:"Свернуть ▴"}
 .rcp em{font-style:normal;background:color-mix(in srgb,var(--lime) 35%,transparent);border-radius:8px;padding:4px 8px;font-size:14px;justify-self:start}
 .rcp h4{margin:14px 0 4px}.rcp ul,.rcp ol{margin:0;padding-left:20px}.rcp li{margin:3px 0}
+.wx{font-size:13px;color:inherit;opacity:.8;background:#8882;border-radius:99px;padding:4px 10px;white-space:nowrap}
 .lv{display:flex;align-items:center;gap:10px;color:#fff;margin-inline-end:auto}
 .lvn{background:var(--red);color:#fff;border-radius:10px;height:30px;padding:0 11px;display:inline-flex;align-items:center;justify-content:center;font:700 15px/1 Onest,system-ui,sans-serif;white-space:nowrap}
 .lvt{display:grid;font-size:13px;min-width:110px;line-height:1.2}.lvt i{display:block;height:6px;background:#ffffff26;border-radius:3px;overflow:hidden;margin:4px 0 2px}.lvt b{display:block;height:100%;background:var(--lime)}.lvt small{color:#cfc6dd;font-size:12px}
@@ -262,7 +263,7 @@ main{padding:18px max(4vw,14px) calc(120px + env(safe-area-inset-bottom))}
 </head>
 <body>
 <header class="top">
-  <div class="bar"><h1>Форма<b>.</b>дома</h1><div class="lv" id="lv"></div></div>
+  <div class="bar"><h1>Форма<b>.</b>дома</h1><span class="wx" id="wx" hidden></span><div class="lv" id="lv"></div></div>
 </header>
 <main>
   <section class="hero" id="hero">
@@ -319,11 +320,16 @@ const DEF={plan:{ver:2,start:tk(),
   habits:[X('Без сладкого'),X('Сон 7+ часов'),X('8 000+ шагов')],
   water:8},log:{}};
 const migrate=()=>{if(!S.plan||S.plan.ver!==2){S.plan=JSON.parse(JSON.stringify(DEF.plan));S.log=S.log||{}}};
+// решение сервера по итогам недели: сдвиг этапа (применяется один раз)
+function applyAuto(){const a=S.auto;if(!a||!a.u||a.u<=(S.plan.autoU||0))return false;
+  if(a.delta){const[y,m,d]=S.plan.start.split('-').map(Number),x=new Date(y,m-1,d+a.delta);S.plan.start=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
+  S.plan.autoU=a.u;S.plan.autoMsg=a.msg||'';return true}
 
 let S=JSON.parse(JSON.stringify(DEF));
 const LS='forma-doma-v1';
 try{const v=localStorage.getItem(LS);if(v)S=JSON.parse(v)}catch(e){}
-migrate();
+migrate();applyAuto();
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -348,7 +354,7 @@ function score(k){
 }
 
 /* ---------- эффекты ---------- */
-const APPV=20;
+const APPV=21;
 const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const FXC=['#c6f432','#ffd23f','#3aa0e8','#ff7ab6','#ffffff'],FP=()=>document.documentElement.classList.contains('st-nothing')?['#ffffff','#8a8a8a','#d71921','#ffffff']:FXC;
 function fxl(){let l=document.getElementById('fx');if(!l){l=document.createElement('div');l.id='fx';document.body.appendChild(l)}return l}
@@ -431,6 +437,7 @@ function renderPlan(){
     <div class="stg">${STAGES.map((n,i)=>`<i class="${i<st?'past':i===st?'on':''}" title="${n}"></i>`).join('')}</div>
     <p style="margin:0"><b>Этап ${st+1} · ${STAGES[st]}</b></p>
     <p class="muted" style="margin:2px 0 0">${wk>=8?'Программа пройдена':st<3?`Дальше «${STAGES[st+1]}» через ${left===1?'неделю':left+' нед.'}`:'Последний этап'}</p>
+    ${S.plan.autoMsg&&S.plan.autoU>Date.now()-8*864e5?`<p class="muted" style="margin:6px 0 0">Сервер: ${esc(S.plan.autoMsg)}</p>`:''}
     <div class="row" style="margin-top:10px"><button class="btn ghost" id="slow">Повторить неделю</button><button class="btn ghost" id="fast">Следующий этап</button><button class="btn ghost" id="restart">Сначала</button></div>${advHtml()}
   </div>
   <div class="card"><h3>План по дням</h3>
@@ -1056,6 +1063,11 @@ const IN_CLAUDE=typeof window.claude!=='undefined';
 const SVK='forma-server';
 const SV=()=>{try{return JSON.parse(localStorage.getItem(SVK)||'null')}catch(e){return null}};
 let syncT=null,syncing=false,syncMsg='';
+let svInfo=null;try{svInfo=JSON.parse(localStorage.getItem('forma-info')||'null')}catch(e){}
+const WXI=c=>c===0||c===1?'☀️':c===2?'⛅':c===3?'☁️':c<=48?'🌫️':c<=67||(c>=80&&c<=82)?'🌧️':c<=86?'❄️':'⛈️';
+function setWx(w){try{w?localStorage.setItem('forma-wx',JSON.stringify(w)):localStorage.removeItem('forma-wx')}catch(e){}const e=$('#wx');if(!e)return;
+  if(!w||Date.now()-w.at>6*36e5){e.hidden=true;return}e.hidden=false;e.textContent=`${w.day||w.code>3?WXI(w.code):'🌙'} ${w.t>0?'+':''}${w.t}° ${w.desc}`;e.title=`${w.name||w.city}: днём до ${w.tmax}°, ночью до ${w.tmin}°`}
+try{setTimeout(()=>setWx(JSON.parse(localStorage.getItem('forma-wx')||'null')),0)}catch(e){}
 function setSync(m){syncMsg=m;const e=$('#svst');if(e)e.textContent=m}
 async function api(p,b){const c=SV();if(!c||!c.url)throw Error('Сервер не указан');
   const r=await fetch(c.url.replace(/\/+$/,'')+p,{method:b?'POST':'GET',headers:{'Authorization':'Bearer '+c.key,'Content-Type':'application/json','ngrok-skip-browser-warning':'1'},body:b?JSON.stringify(b):undefined});
@@ -1075,7 +1087,8 @@ async function syncNow(){const c=SV();if(!c||!c.url)return;if(syncing){queueSync
   try{if((S.ui||{}).push)S.rem=buildRem();const before=JSON.stringify(S);
     const r=await api('/api/sync',{state:S});
     if(r&&r.state&&r.state.log&&JSON.stringify(S)===before){const after=JSON.stringify(r.state);
-      if(after!==before){S=r.state;migrate();try{localStorage.setItem(LS,after)}catch(e){}render()}}
+      if(after!==before){S=r.state;migrate();if(applyAuto()){persist();queueSync()}else try{localStorage.setItem(LS,after)}catch(e){}render()}}
+    if(r){if(r.wx!==undefined)setWx(r.wx);if(r.info){svInfo=r.info;try{localStorage.setItem('forma-info',JSON.stringify(r.info))}catch(e){}}}
     else queueSync();
     setSync('Синхронизировано в '+hm(new Date().getHours()*60+new Date().getMinutes()))}
   catch(e){setSync('Нет связи с сервером: '+e.message+'. Данные сохранены на телефоне.')}
@@ -1091,16 +1104,19 @@ async function enablePush(){
 const svCard=()=>{if(IN_CLAUDE)return'';const c=SV()||{};return `<div class="card"><h3>Свой сервер</h3>
   <label class="lb">Адрес сервера<input type="url" id="svu" placeholder="https://имя.ngrok-free.app" value="${esc(c.url||'')}" autocomplete="off"></label>
   <label class="lb" style="margin-top:8px">Ключ<input type="password" id="svk" value="${esc(c.key||'')}" autocomplete="off"></label>
+  <label class="lb" style="margin-top:8px">Город для погоды<input type="text" id="svc" placeholder="например, Берлин" value="${esc(S.city||'')}" autocomplete="off"></label>
   <div class="row" style="margin-top:10px"><button class="btn" id="svgo">${c.url?'Сохранить и проверить':'Подключить'}</button>${c.url?'<button class="btn ghost" id="svoff">Отключить</button>':''}</div>
-  ${c.url?`<div class="row" style="margin-top:8px"><button class="btn ghost" id="svpush">${(S.ui||{}).push?'Обновить уведомления':'Включить уведомления'}</button><button class="btn ghost" id="svtest">Тест</button>${(S.ui||{}).push?'<button class="btn ghost" id="svpoff">Выключить</button>':''}</div>`:''}
+  ${c.url?`<div class="row" style="margin-top:8px"><button class="btn ghost" id="svpush">${(S.ui||{}).push?'Обновить уведомления':'Включить уведомления'}</button><button class="btn ghost" id="svtest">Тест</button><button class="btn ghost" id="svrep">Отчёт за неделю</button>${(S.ui||{}).push?'<button class="btn ghost" id="svpoff">Выключить</button>':''}</div>`:''}
+  ${c.url&&svInfo&&svInfo.first?`<p class="muted" style="margin:8px 0 0">История на сервере: ${svInfo.days} ${svInfo.days%10===1&&svInfo.days%100!==11?'день':[2,3,4].includes(svInfo.days%10)&&![12,13,14].includes(svInfo.days%100)?'дня':'дней'} с ${parse(svInfo.first).getDate()} ${MN[parse(svInfo.first).getMonth()]} · помесячные копии хранятся всегда</p>`:''}
   <p class="muted" id="svst">${esc(syncMsg)}</p></div>`};
-document.addEventListener('click',async e=>{const t=e.target.closest('#svgo,#svoff,#svpush,#svtest,#svpoff');if(!t)return;
+document.addEventListener('click',async e=>{const t=e.target.closest('#svgo,#svoff,#svpush,#svtest,#svpoff,#svrep');if(!t)return;
   try{
     if(t.id==='svgo'){let u=$('#svu').value.trim();const k=$('#svk').value.trim();if(!u||!k){setSync('Впиши адрес и ключ.');return}
-      u=u.replace(/\/api\/ping\/?$/,'').replace(/\/+$/,'');if(!/^https?:\/\//.test(u))u='https://'+u;if(/^http:\/\//.test(u)&&!/^http:\/\/(localhost|127\.0\.0\.1)/.test(u))u=u.replace(/^http:/,'https:');$('#svu').value=u;localStorage.setItem(SVK,JSON.stringify({url:u,key:k}));setSync('Проверяю…');await syncNow();renderMe();return}
+      u=u.replace(/\/api\/ping\/?$/,'').replace(/\/+$/,'');if(!/^https?:\/\//.test(u))u='https://'+u;if(/^http:\/\//.test(u)&&!/^http:\/\/(localhost|127\.0\.0\.1)/.test(u))u=u.replace(/^http:/,'https:');$('#svu').value=u;localStorage.setItem(SVK,JSON.stringify({url:u,key:k}));{const cy=($('#svc')||{value:''}).value.trim();if(cy!==(S.city||'')){S.city=cy;persist()}}setSync('Проверяю…');await syncNow();renderMe();return}
     if(t.id==='svoff'){localStorage.removeItem(SVK);syncMsg='Сервер отключён. Данные остались на телефоне.';renderMe();return}
     if(t.id==='svpush'){setSync('Включаю…');await enablePush();renderMe();toast('Уведомления включены. Нажми «Тест», чтобы проверить.');return}
     if(t.id==='svpoff'){S.ui=Object.assign({},S.ui,{push:false});S.rem=[];persist();await syncNow();renderMe();toast('Уведомления выключены');return}
+    if(t.id==='svrep'){const r=await api('/api/report',{});toast(r.sent?'Отчёт отправлен — придёт уведомлением':r.report?'Нет подписанных устройств — сначала «Включить уведомления»':'Пока нечего считать');return}
     if(t.id==='svtest'){const r=await api('/api/test',{});toast(r.sent?'Отправлено — уведомление придёт через пару секунд':'Нет подписанных устройств — сначала «Включить уведомления»');return}
   }catch(er){setSync('Не получилось: '+er.message)}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncNow()});
@@ -1128,7 +1144,7 @@ if(SV())syncNow();
 })();
 }
 </script>
-<script>window.FORMA_V=20;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+<script>window.FORMA_V=21;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 function formaCheck(){fetch("version.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=parseInt(v);if(!(v>window.FORMA_V)||document.querySelector(".upd"))return;
   const b=document.createElement("div");b.className="upd";b.innerHTML='<span>Есть обновление</span><button class="btn">Обновить</button>';
   b.querySelector("button").onclick=async()=>{try{for(const k of await caches.keys())await (await caches.open(k)).delete("index.html")}catch(e){}location.reload()};document.body.appendChild(b)}).catch(()=>{})}
