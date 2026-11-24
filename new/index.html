@@ -138,13 +138,19 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .wo .ex{margin-top:auto;margin-bottom:auto;text-align:center}
 .wo .ex small{color:var(--acc);font-weight:800;letter-spacing:.06em;font-size:12px;text-transform:uppercase}
 .wo .ex h2{font-size:34px;margin:8px 0;font-weight:800;letter-spacing:-.02em}
-.wo .ex .num{font-size:120px;line-height:1;display:block}
+.wo .ex .num.big{font-size:120px;line-height:1;display:block}
 .wo .ex p{color:#ffffffb0;margin:6px 0 0}
-.rest{position:relative;width:220px;height:220px;margin:0 auto}.rest svg{width:100%;height:100%;transform:rotate(-90deg)}
-.rest circle{fill:none;stroke-width:10;stroke-linecap:round}.rest .num{position:absolute;inset:0;display:grid;place-items:center;font-size:64px}
+.rest{position:relative;width:min(240px,60vw);aspect-ratio:1;margin:18px auto 8px}.rest svg{width:100%;height:100%;transform:rotate(-90deg)}
+.rest circle{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .1s linear}.rest .num{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(44px,14vw,60px);line-height:1}
 .wo .acts{display:grid;gap:10px}
 .wo .acts .hold{background:#ffffff14;color:#fff}
 .wo .acts .sec2{height:48px;border-radius:16px;background:#ffffff0d;color:#ffffffb0;font-weight:700}
+.wrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wrow3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.wbtn{height:56px;border-radius:18px;background:#ffffff14;color:#fff;font-weight:800;font-size:16px;transition:transform .15s var(--spring)}.wbtn:active{transform:scale(.96)}
+.wbtn.pri{background:linear-gradient(90deg,var(--acc),var(--acc2));color:var(--accInk)}.wbtn.big{height:64px;font-size:18px}
+.wclk{font-size:17px;color:#fff}.wtb{display:flex;gap:8px}.wo .x{display:grid;place-items:center}.wo .x svg{width:18px;height:18px;stroke:#fff;stroke-width:2.6;stroke-linecap:round;fill:none}
+.wo.paused .ex h2,.wo.paused .ex .num{opacity:.45;transition:opacity .3s}.wo.paused .ex small{color:#fff}
+.blobs{display:none}
 /* эффекты */
 #fx{position:fixed;inset:0;pointer-events:none;z-index:80}
 .rip{position:absolute;width:160px;height:160px;margin:-80px 0 0 -80px;border-radius:50%;border:2px solid var(--c,#5ee6a8);pointer-events:none}
@@ -158,16 +164,78 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .xp{position:absolute;font-weight:800;color:var(--acc);font-size:16px;white-space:nowrap}
 .toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;background:#f3f4f8;color:#0b0d12;padding:12px 18px;border-radius:16px;font-weight:700;z-index:60;transition:all .4s var(--spring);white-space:nowrap}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+
+
+/* живая сцена неба */
+.scene{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden;border-radius:inherit}
+.scene>i,.clouds{position:absolute}
+.moon{right:24%;top:24%;width:30px;height:30px;border-radius:50%;box-shadow:inset -9px 3px 0 0 #f6f1dc,0 0 26px 4px #f6f1dc33;opacity:var(--night,0);transform:rotate(-20deg);transition:opacity 1s}
+.glow{left:-10%;right:-10%;bottom:-30%;height:70%;background:radial-gradient(50% 60% at var(--gx,50%) 100%,var(--gc,#ff9a62),transparent 70%);opacity:var(--dusk,0);transition:opacity 1s}
+.hills{position:absolute;left:0;right:0;bottom:0;width:100%;height:28%}
+.hills .h1{fill:var(--h1,#1a1840)}.hills .h2{fill:var(--h2,#100f2a)}
+.clouds{inset:0;opacity:var(--cl,0);transition:opacity 1.2s}
+.clouds i{position:absolute;height:26px;border-radius:30px;background:var(--cc,#ffffffd0);filter:blur(1.5px);animation:cloud linear infinite}
+.clouds i::before,.clouds i::after{content:"";position:absolute;border-radius:50%;background:inherit}
+.clouds i::before{width:46%;height:180%;left:16%;bottom:30%}.clouds i::after{width:34%;height:140%;left:50%;bottom:30%}
+.clouds i:nth-child(1){top:16%;width:90px;animation-duration:70s;animation-delay:-10s}
+.clouds i:nth-child(2){top:34%;width:120px;animation-duration:95s;animation-delay:-50s;opacity:.85}
+.clouds i:nth-child(3){top:8%;width:70px;animation-duration:60s;animation-delay:-35s;opacity:.7}
+.clouds i:nth-child(4){top:46%;width:100px;animation-duration:110s;animation-delay:-80s;opacity:.6}
+.clouds i:nth-child(5){top:24%;width:140px;animation-duration:130s;animation-delay:-20s;opacity:.5}
+@keyframes cloud{from{transform:translateX(-180px)}to{transform:translateX(560px)}}
+.rain{inset:-20% 0 0;opacity:var(--rn,0);background:repeating-linear-gradient(105deg,transparent 0 9px,#cfe3ff55 9px 10px,transparent 10px 22px);background-size:120px 120px;animation:rain .45s linear infinite;transition:opacity 1s}
+@keyframes rain{to{background-position:-30px 120px}}
+.snow{inset:0;opacity:var(--sn,0);background-image:radial-gradient(2px 2px at 20px 30px,#fff,transparent),radial-gradient(1.5px 1.5px at 80px 70px,#fff,transparent),radial-gradient(2px 2px at 140px 20px,#fffd,transparent),radial-gradient(1.5px 1.5px at 60px 110px,#fff,transparent),radial-gradient(2px 2px at 170px 90px,#fffc,transparent);background-size:190px 130px;animation:snow 9s linear infinite;transition:opacity 1s}
+.snow.s2{background-size:130px 110px;animation-duration:14s;opacity:calc(var(--sn,0)*.7)}
+@keyframes snow{to{background-position:30px 130px}}
+.fog{left:0;right:0;bottom:0;height:70%;background:linear-gradient(transparent,#d9e2f0aa 70%);opacity:var(--fg,0);transition:opacity 1s}
+.bolt{inset:0;background:#fff;opacity:0}.sky[data-wx=storm] .bolt{animation:bolt 7s infinite}
+@keyframes bolt{0%,88%,92%,96%,100%{opacity:0}89%,93%{opacity:.55}}
+.scene::after{content:"";position:absolute;inset:0;background:#5b6475;opacity:var(--tint,0);mix-blend-mode:saturation;pointer-events:none}
+.wxrow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.wxrow button{height:40px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--mut)}.wxrow button.on{color:var(--ink);border-color:var(--acc)}
+@media(prefers-reduced-motion:reduce){.clouds i,.rain,.snow,.bolt{animation:none!important}}
+
+/* ===== Liquid Glass (тест) ===== */
+html.lg{background:#07080c}.lg body{background:transparent}
+.lg .blobs{display:block;position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.lg .blobs i{position:absolute;width:62vmax;height:62vmax;border-radius:50%;filter:blur(70px);opacity:.55;animation:drift 24s ease-in-out infinite alternate}
+.lg .blobs i:nth-child(1){background:var(--acc);left:-22vmax;top:-18vmax}
+.lg .blobs i:nth-child(2){background:#4aa8ff;right:-28vmax;top:18vh;animation-duration:30s}
+.lg .blobs i:nth-child(3){background:var(--done);left:5vw;bottom:-34vmax;animation-duration:34s;opacity:.38}
+.lg .blobs i:nth-child(4){background:#b06bff;right:-14vmax;bottom:-12vmax;animation-duration:27s;opacity:.45}
+@keyframes drift{to{transform:translate(9vmax,7vmax) scale(1.15)}}
+.lg{--glass:linear-gradient(140deg,#ffffff26,#ffffff0a 45%,#ffffff12);--rim:inset 0 1px 0 #ffffff70,inset 0 -1px 0 #ffffff1a,inset 1px 0 0 #ffffff26,inset -1px 0 0 #ffffff12;--blur:blur(26px) saturate(190%)}
+.lg .now,.lg .it .fg,.lg .tile,.lg .rings,.lg .lvl,.lg .st3 div,.lg .heat,.lg .grp,.lg .seg,.lg .pals button,.lg .row2 button,.lg .hold,.lg .lv,.lg .rc{
+  background:radial-gradient(130% 70% at 15% -10%,#ffffff33,transparent 45%),var(--glass);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border:1px solid #ffffff2a;box-shadow:var(--rim),0 14px 34px -16px #000c}
+.lg .rc{background-blend-mode:overlay}
+.lg .it{background:transparent}.lg .it .bgl{display:none}
+.lg .it .fg.drag{box-shadow:var(--rim),0 0 0 2px color-mix(in srgb,var(--done) 70%,transparent),0 14px 34px -16px #000c}
+.lg .hd{background:linear-gradient(#07080c8c,transparent)}.lg .row2 button{color:#fff}.lg .now p,.lg .it .tx small{color:#ffffffb8}
+.lg .sky{box-shadow:inset 0 1px 0 #ffffff90,inset 0 0 0 1px #ffffff30,0 24px 50px -24px #000;border-radius:32px}
+.lg .sky::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(170deg,#ffffff38,transparent 30%,transparent 70%,#ffffff14)}
+.lg .tb{background:radial-gradient(120% 90% at 20% -20%,#ffffff38,transparent 50%),linear-gradient(140deg,#ffffff1f,#ffffff08);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);border:1px solid #ffffff33;border-radius:34px;box-shadow:var(--rim),0 18px 40px -14px #000d}
+.lg .tb>button.on{background:#ffffff22;border-radius:22px;box-shadow:inset 0 1px 0 #ffffff55;color:#fff}.lg .tb>button.on::after{display:none}
+.lg .fab{background:radial-gradient(circle at 32% 24%,#ffffffb0,transparent 38%),linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:inset 0 2px 1px #ffffff90,inset 0 -6px 12px #0003,0 0 0 1px #ffffff40,0 12px 28px -6px var(--acc)}
+.lg .now:active,.lg .tile:active,.lg .row2 button:active,.lg .pals button:active{transform:scale(.97)}
+.lg .now,.lg .tile,.lg .row2 button{transition:transform .35s var(--spring)}
+.lg .hold i{opacity:.9}.lg .seg button.on{background:#ffffff26;box-shadow:inset 0 1px 0 #ffffff55}
+.lg .lvl{background:radial-gradient(130% 70% at 15% -10%,#ffffff33,transparent 45%),linear-gradient(140deg,color-mix(in srgb,var(--acc) 30%,#ffffff10),#ffffff08)}
+.lg .wo{background:radial-gradient(120% 80% at 50% 0%,color-mix(in srgb,var(--acc) 35%,#07080c),#07080cf0 60%);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px)}
+.lg .wbtn{background:radial-gradient(130% 80% at 20% -20%,#ffffff33,transparent 50%),#ffffff14;box-shadow:var(--rim)}
+.lg .wbtn.pri{background:radial-gradient(130% 80% at 20% -20%,#ffffff70,transparent 50%),linear-gradient(90deg,var(--acc),var(--acc2))}
+.lg .toast{background:#ffffffd9;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:var(--rim),0 10px 30px #0006}
+@media(prefers-reduced-motion:reduce){.lg .blobs i{animation:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.wo{clip-path:none}}
 @media(min-width:700px){.app{padding-top:10px}}
 </style>
 </head>
 <body>
+<div class="blobs" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 <div class="app">
   <p class="demo">Тестовая версия дизайна · данные примерные</p>
   <header class="hd">
     <div class="who"><small id="greet">Добрый день</small><b id="dateT">Вторник, 24 ноября</b></div>
-    <button class="snd" id="snd" aria-label="Звук"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path id="sndW" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/><path id="sndX" d="M16 9.5l5 5M21 9.5l-5 5" style="display:none"/></svg></button>
     <button class="lv" id="lvBtn" aria-label="Уровень"><svg viewBox="0 0 46 46"><circle class="t" cx="23" cy="23" r="20"/><circle class="p" id="lvP" cx="23" cy="23" r="20" stroke-dasharray="125.7" stroke-dashoffset="125.7"/></svg><span id="lvN">3</span></button>
   </header>
 
@@ -175,7 +243,13 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   <section class="scr on" id="s-today">
     <div class="sky" id="sky">
       <div class="stars"></div>
-      <div class="top"><span>Твой день</span><b id="skyT">14:20</b></div>
+      <div class="scene" aria-hidden="true">
+        <i class="moon"></i><i class="glow"></i>
+        <div class="clouds"><i></i><i></i><i></i><i></i><i></i></div>
+        <svg class="hills" viewBox="0 0 400 90" preserveAspectRatio="none"><path class="h1" d="M0 52 C40 30 80 34 120 46 S200 20 250 34 S330 50 400 28 V90 H0Z"/><path class="h2" d="M0 70 C50 56 90 62 140 68 S220 50 280 60 S360 72 400 58 V90 H0Z"/></svg>
+        <i class="rain"></i><i class="snow"></i><i class="snow s2"></i><i class="fog"></i><i class="bolt"></i>
+      </div>
+      <div class="top"><span id="wxT">Твой день</span><b id="skyT">14:20</b></div>
       <svg class="arc" id="arc" viewBox="0 0 340 178" aria-label="Дуга дня"></svg>
       <div class="pc"><span class="num" id="pct">0%</span><small id="cnt"></small></div>
       <div class="ends"><span id="eWake">07:00 подъём</span><span id="eSleep">23:00 отбой</span></div>
@@ -225,7 +299,12 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
     <div class="sec"><h3>Цвет</h3><small id="palN"></small></div>
     <div class="pals" id="pals"></div>
     <div class="sec"><h3>Звук</h3></div>
-    <div class="seg" id="packs" style="grid-template-columns:repeat(2,minmax(0,1fr))"><button data-pk="click">Щелчок при отметке</button><button data-pk="off">Выкл</button></div>
+    <div class="seg" id="packs" style="grid-template-columns:repeat(2,minmax(0,1fr))"><button data-pk="click">Тихие звуки</button><button data-pk="off">Без звука</button></div>
+    <div class="sec"><h3>Погода на фоне</h3><small id="wxS"></small></div>
+    <div class="grp"><div><span style="color:var(--ink)">По моему месту</span><button class="wbtn" id="wxPos" style="height:38px;padding:0 14px;font-size:14px;background:var(--card2)">Разрешить</button></div></div>
+    <div class="wxrow" id="wxRow" style="margin-top:10px"></div>
+    <div class="sec"><h3>Стиль</h3><small>для теста</small></div>
+    <div class="seg" id="styles" style="grid-template-columns:repeat(2,minmax(0,1fr))"><button data-st="base">Обычный</button><button data-st="lg">Liquid Glass</button></div>
     <p class="hint">Остальные настройки в тестовой версии только для вида</p>
   </section>
 </div>
@@ -240,7 +319,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 
 <div class="wo" id="wo" role="dialog" aria-modal="true" aria-label="Тренировка">
   <div class="segs" id="segs"></div>
-  <div class="wt"><span id="woStep"></span><button class="x" id="woX" aria-label="Закрыть">×</button></div>
+  <div class="wt"><span id="woStep"></span><span class="wclk num" id="woClock">00:00</span><span class="wtb"><button class="x" id="woP" aria-label="Пауза"></button><button class="x" id="woX" aria-label="Закрыть">×</button></span></div>
   <div class="ex" id="woBody"></div>
   <div class="acts" id="woActs"></div>
 </div>
@@ -322,14 +401,28 @@ const PACKS={
 function click(){const c=ac();if(!c||!soundOn)return;const t=c.currentTime;
   const o=c.createOscillator(),v=c.createGain();o.type='sine';o.frequency.setValueAtTime(1500,t);o.frequency.exponentialRampToValueAtTime(700,t+.03);
   v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(.09,t+.003);v.gain.exponentialRampToValueAtTime(.0001,t+.045);o.connect(v);v.connect(c.destination);o.start(t);o.stop(t+.06)}
-const SND=new Proxy({},{get:(_,k)=>()=>{if(k==='done')click()}});
+const S0={
+  done:()=>click(),
+  undo:()=>tone(800,.05,'sine',.05,0,420),
+  tap:()=>tone(2400,.012,'sine',.022),
+  water:()=>tone(520,.09,'sine',.055,0,1150),
+  count:()=>tone(1000,.05,'sine',.04),
+  beep:()=>{tone(880,.12,'sine',.055);tone(1320,.2,'sine',.055,.12)},
+  pause:()=>tone(1100,.05,'sine',.04,0,780),
+  resume:()=>tone(780,.05,'sine',.04,0,1100),
+  big:()=>[523,659,784].forEach((f,i)=>tone(f,.45,'sine',.04,i*.07)),
+  level:()=>[784,988,1319].forEach((f,i)=>tone(f,.35,'triangle',.04,i*.08)),
+  open:()=>tone(600,.12,'sine',.035,0,900),
+  close:()=>tone(900,.1,'sine',.03,0,600),
+  swipe:()=>tone(1200,.05,'sine',.02,0,1600)};
+const SND=new Proxy(S0,{get:(o,k)=>o[k]||(()=>{})});
 let holdOsc=null;
 function holdSound(on){return;const c=ac();if(!c||!soundOn)return;if(on){const t=c.currentTime,v=c.createGain(),o=c.createOscillator();
   if(pack==='retro'){o.type='square';o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(700,t+.7);const l=c.createOscillator(),lg=c.createGain();l.frequency.value=22;lg.gain.value=18;l.connect(lg);lg.connect(o.frequency);l.start(t);l.stop(t+1.2);v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(.045,t+.05)}
   else{o.type='sine';o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(520,t+.7);v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(.07,t+.08)}
   o.connect(v);v.connect(c.destination);o.start(t);holdOsc={o,v}}
   else if(holdOsc){const t=c.currentTime;holdOsc.v.gain.cancelScheduledValues(t);holdOsc.v.gain.setTargetAtTime(0,t,.02);holdOsc.o.stop(t+.12);holdOsc=null}}
-function sndIcon(){$('#sndW').style.display=soundOn?'':'none';$('#sndX').style.display=soundOn?'none':''}
+function sndIcon(){}
 function floatXP(x,y,t){if(RM)return;const e=document.createElement('b');e.className='xp';e.textContent=t;e.style.cssText=`left:${x}px;top:${y}px`;fx.appendChild(e);
   e.animate([{transform:'translate(-50%,0) scale(.7)',opacity:0},{transform:'translate(-50%,-18px) scale(1.1)',opacity:1,offset:.25},{transform:'translate(-50%,-60px)',opacity:0}],{duration:1100,easing:'ease-out'}).onfinish=()=>e.remove()}
 const buzz=v=>{try{navigator.vibrate&&navigator.vibrate(v)}catch(e){}};
@@ -344,10 +437,28 @@ function drawLv(){const a=LV[lvl-1]||0,b=LV[lvl]||a+500,k=(xp-a)/(b-a);$('#lvP')
   $('#pLv').textContent=lvl;$('#pXp').style.width=Math.round(k*100)+'%';$('#pXpT').textContent=`${xp-a} / ${b-a} XP до уровня ${lvl+1}`}
 
 /* --- небо по времени суток --- */
+/* погода: автоматически (Open-Meteo по разрешённому месту) или вручную для теста */
+const WXN={clear:'ясно',partly:'переменная облачность',cloudy:'облачно',fog:'туман',rain:'дождь',snow:'снег',storm:'гроза'};
+let wxMode='auto',wxLive=null;try{wxMode=localStorage.getItem('fd-wx')||'auto';wxLive=JSON.parse(localStorage.getItem('fd-wxlive')||'null')}catch(e){}
+const wcode=c=>c===0||c===1?'clear':c===2?'partly':c===3?'cloudy':c===45||c===48?'fog':(c>=51&&c<=67)||(c>=80&&c<=82)?'rain':(c>=71&&c<=77)||c===85||c===86?'snow':c>=95?'storm':'cloudy';
+function wxNow(){return wxMode!=='auto'?{k:wxMode,t:null}:wxLive&&Date.now()-wxLive.at<3*3600e3?{k:wxLive.k,t:wxLive.t}:{k:'clear',t:null}}
+async function fetchWx(){let pos=null;try{pos=JSON.parse(localStorage.getItem('fd-pos')||'null')}catch(e){}if(!pos)return;
+  try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.lat}&longitude=${pos.lon}&current=temperature_2m,weather_code&timezone=auto`);const j=await r.json();
+    wxLive={k:wcode(j.current.weather_code),t:Math.round(j.current.temperature_2m),at:Date.now()};localStorage.setItem('fd-wxlive',JSON.stringify(wxLive));sky()}catch(e){}}
+function askPos(){if(!navigator.geolocation){toast('Местоположение недоступно');return}
+  navigator.geolocation.getCurrentPosition(p=>{const pos={lat:+p.coords.latitude.toFixed(2),lon:+p.coords.longitude.toFixed(2)};try{localStorage.setItem('fd-pos',JSON.stringify(pos))}catch(e){}wxMode='auto';try{localStorage.setItem('fd-wx','auto')}catch(e){}drawWx();fetchWx();toast('Погода по твоему месту включена')},
+    ()=>toast('Доступ к месту не дан — можно выбрать погоду вручную'),{maximumAge:36e5,timeout:10000})}
 function sky(){const n=now(),S=[[0,'#0b1026','#1c1f4a',1],[360,'#2b2a6b','#ff8a65',.6],[480,'#3a7bd5','#ffb38a',0],[720,'#2f80ff','#7fd3ff',0],[1020,'#4a3fb0','#ff9a62',.1],[1200,'#2a1b5e','#d8577a',.4],[1320,'#0f1433','#3b2a6b',.9],[1440,'#0b1026','#1c1f4a',1]];
   let i=0;while(i<S.length-2&&n>=S[i+1][0])i++;const [t0,a0,b0,s0]=S[i],[t1,a1,b1,s1]=S[i+1],k=(n-t0)/(t1-t0);
   const mix=(x,y)=>{const p=h=>[1,3,5].map(j=>parseInt(h.slice(j,j+2),16));const A=p(x),B=p(y);return'rgb('+A.map((v,j)=>Math.round(v+(B[j]-v)*k)).join(',')+')'};
   const el=$('#sky');el.style.background=`linear-gradient(180deg,${mix(a0,a1)},${mix(b0,b1)})`;el.style.setProperty('--stars',(s0+(s1-s0)*k).toFixed(2));
+  const night=Math.max(0,Math.min(1,s0+(s1-s0)*k)),dusk=n>=1020&&n<1260?Math.sin(Math.PI*(n-1020)/240):n>=330&&n<510?Math.sin(Math.PI*(n-330)/180):0;
+  el.style.setProperty('--night',night.toFixed(2));el.style.setProperty('--dusk',(dusk*.9).toFixed(2));el.style.setProperty('--gc',n<720?'#ffb07a':'#ff6a5c');el.style.setProperty('--gx',n<720?'20%':'80%');
+  const hl=night>.5?['#151432','#0b0a1f']:dusk>.3?['#3a2350','#22142f']:['#2c4a6e','#1c3150'];el.style.setProperty('--h1',hl[0]);el.style.setProperty('--h2',hl[1]);
+  const w=wxNow(),L={clear:[0,0,0,0,0],partly:[.55,0,0,0,.1],cloudy:[.95,0,0,0,.45],fog:[.4,0,0,1,.5],rain:[.95,1,0,0,.6],snow:[.8,0,1,0,.4],storm:[1,1,0,0,.75]}[w.k]||[0,0,0,0,0];
+  ['--cl','--rn','--sn','--fg','--tint'].forEach((v,i)=>el.style.setProperty(v,L[i]));el.style.setProperty('--cc',night>.5?'#8f9ab866':w.k==='storm'||w.k==='rain'?'#c9cfdacc':'#ffffffd9');
+  el.dataset.wx=w.k;if(w.k!=='clear')el.style.setProperty('--stars',(night*.25).toFixed(2));
+  $('#wxT').textContent=w.t!=null?`${w.t>0?'+':''}${w.t}° · ${WXN[w.k]}`:wxMode!=='auto'?`${WXN[w.k]} · тест`:'Твой день';
   $('#skyT').textContent=hm(n);const g=n<300?'Доброй ночи':n<720?'Доброе утро':n<1080?'Добрый день':'Добрый вечер';$('#greet').textContent=g;
   const d=new Date(),DN=['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'],MN=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
   $('#dateT').textContent=`${DN[d.getDay()]}, ${d.getDate()} ${MN[d.getMonth()]}`}
@@ -429,36 +540,79 @@ document.querySelectorAll('.tb>button[data-s]').forEach(b=>b.onclick=()=>{const 
   scrollTo({top:0});buzz(5);SND.tap();if(to==='food')rings();if(to==='prog'){heat();drawLv()}});
 
 /* --- тренировка --- */
-const EX=[['Разминка','5','минут','Суставы и ходьба на месте',0],['Приседания','12','повторов','Таз назад, колени над носками',2],['Отжимания от стола','8','повторов','Тело — прямая линия',2],['Ягодичный мост','12','повторов','Задержка наверху 1 секунду',2],['Планка','20','секунд','Живот и ягодицы напряжены',1],['Растяжка','5','минут','Плавно, без рывков',0]];
+const EX=[{n:'Разминка',sec:300,tip:'Суставы и ходьба на месте',sets:1},{n:'Приседания',reps:12,tip:'Таз назад, колени над носками',sets:2},{n:'Отжимания от стола',reps:8,tip:'Тело — прямая линия',sets:2},
+  {n:'Ягодичный мост',reps:12,tip:'Задержка наверху 1 секунду',sets:2},{n:'Планка',sec:20,tip:'Живот и ягодицы напряжены',sets:2},{n:'Растяжка',sec:300,tip:'Плавно, без рывков',sets:1}];
+const REST=45,RING=628.3;
 let W=null;
+const mmss=s=>{s=Math.max(0,Math.ceil(s));return s>=60?Math.floor(s/60)+':'+String(s%60).padStart(2,'0'):String(s)};
+const clk=ms=>{const s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+const IC={pause:'<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>',play:'<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>'};
 function openWo(e){SND.open();const r=$('#fab').getBoundingClientRect(),src=e&&e.currentTarget?e.currentTarget.getBoundingClientRect():r;
   const wo=$('#wo');wo.style.setProperty('--cx',(src.left+src.width/2)+'px');wo.style.setProperty('--cy',(src.top+src.height/2)+'px');
-  W={i:0,set:1,rest:0};$('#segs').innerHTML=EX.map(()=>'<i><b></b></i>').join('');wo.classList.add('open');document.body.style.overflow='hidden';buzz(10);woDraw()}
-function closeWo(){SND.close();$('#wo').classList.remove('open');document.body.style.overflow='';clearInterval(W&&W.tm);W=null}
-$('#fab').onclick=openWo;$('#woX').onclick=closeWo;
-function woDraw(){if(!W)return;const segs=document.querySelectorAll('#segs i b');segs.forEach((b,j)=>b.style.width=j<W.i?'100%':j===W.i?Math.round((W.set-1)/Math.max(1,EX[j][4]||1)*100)+'%':'0');
-  if(W.i>=EX.length){$('#woStep').textContent='Готово';$('#woBody').innerHTML=`<small>Тренировка завершена</small><h2>Как прошло?</h2><p>+90 XP</p>`;
-    $('#woActs').innerHTML=['Легко','Нормально','Тяжело'].map(t=>`<button class="sec2" data-r>${t}</button>`).join('');
-    document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{done.add('wo');closeWo();addXP(90,$('#fab'));confetti(cv('--acc'));SND.big();render(true,'wo');toast('Тренировка записана')});return}
-  const [n,v,u,tip,sets]=EX[W.i];$('#woStep').textContent=`Упражнение ${W.i+1} из ${EX.length}${sets?` · подход ${W.set} из ${sets}`:''}`;
-  if(W.rest>0){$('#woBody').innerHTML=`<small>Отдых</small><div class="rest"><svg viewBox="0 0 220 220"><circle cx="110" cy="110" r="100" stroke="#ffffff1a"/><circle id="rc" cx="110" cy="110" r="100" stroke="#5ee6a8" stroke-dasharray="628.3" stroke-dashoffset="0"/></svg><span class="num" id="rn">${W.rest}</span></div><p>Дальше: ${n}</p>`;
-    $('#woActs').innerHTML=`<button class="sec2" id="skipR">Пропустить отдых</button>`;$('#skipR').onclick=()=>{clearInterval(W.tm);W.rest=0;woDraw()};
-    const T=W.rest,t0=Date.now();clearInterval(W.tm);W.tm=setInterval(()=>{const left=Math.max(0,T-(Date.now()-t0)/1000);const rn=$('#rn'),rc=$('#rc');if(rn)rn.textContent=Math.ceil(left);if(rc)rc.style.strokeDashoffset=(628.3*(1-left/T)).toFixed(1);if(left<=0){clearInterval(W.tm);W.rest=0;buzz([15,30,15]);SND.beep();woDraw()}},100);return}
-  $('#woBody').innerHTML=`<small>${sets?'Подход '+W.set:'Начни'}</small><h2>${n}</h2><span class="num">${v}</span><p>${u} · ${tip}</p>`;
+  W={i:0,set:1,ph:'work',run:false,started:false,end:0,left:0,tot:0,t0:Date.now(),el:0,paused:false,last:-1};
+  $('#segs').innerHTML=EX.map(()=>'<i><b></b></i>').join('');wo.classList.add('open');document.body.style.overflow='hidden';buzz(10);
+  clearInterval(W.tm);W.tm=setInterval(woTick,100);woDraw()}
+function closeWo(){SND.close();$('#wo').classList.remove('open');document.body.style.overflow='';if(W)clearInterval(W.tm);W=null}
+$('#fab').onclick=openWo;$('#woX').onclick=closeWo;$('#woP').onclick=togglePause;
+function startTimer(sec){W.tot=sec*1000;W.end=Date.now()+W.tot;W.left=W.tot;W.run=true;W.started=true;W.last=-1}
+function togglePause(){if(!W)return;const n=Date.now();
+  if(!W.paused){W.paused=true;W.el+=n-W.t0;if(W.run)W.left=Math.max(0,W.end-n);SND.pause()}
+  else{W.paused=false;W.t0=n;if(W.run)W.end=n+W.left;SND.resume()}
+  buzz(8);woDraw()}
+function plus15(){if(!W||!W.run)return;W.tot+=15000;if(W.paused)W.left+=15000;else W.end+=15000;SND.tap();woTick()}
+function finishSet(){const ex=EX[W.i];W.run=false;W.started=false;
+  if(W.set<ex.sets){W.set++;startRest()}else{W.i++;W.set=1;if(W.i>=EX.length){W.ph='done';SND.big();woDraw()}else startRest()}}
+function startRest(){W.ph='rest';startTimer(REST);woDraw()}
+function woTick(){if(!W)return;const n=Date.now(),el=W.el+(W.paused?0:n-W.t0),c=$('#woClock');if(c)c.textContent=clk(el);
+  if(!W.run||W.paused)return;const left=Math.max(0,W.end-n),sec=Math.ceil(left/1000),rn=$('#rn'),rc=$('#rc');
+  if(rn)rn.textContent=mmss(left/1000);if(rc)rc.style.strokeDashoffset=(RING*(1-left/W.tot)).toFixed(1);
+  if(sec!==W.last&&sec<=3&&sec>0)SND.count();W.last=sec;
+  if(left<=0){W.run=false;SND.beep();buzz([15,30,15]);if(W.ph==='rest'){W.ph='work';W.started=false;woDraw()}else finishSet()}}
+function ringHtml(label,val,color){return `<div class="rest"><svg viewBox="0 0 220 220"><circle cx="110" cy="110" r="100" stroke="#ffffff1a"/><circle id="rc" cx="110" cy="110" r="100" stroke="${color}" stroke-dasharray="${RING}" stroke-dashoffset="${W.run?(RING*(1-(W.paused?W.left:Math.max(0,W.end-Date.now()))/W.tot)).toFixed(1):0}"/></svg><span class="num" id="rn">${val}</span>${label?`<em>${label}</em>`:''}</div>`}
+function woDraw(){if(!W)return;
+  document.querySelectorAll('#segs i b').forEach((b,j)=>b.style.width=j<W.i?'100%':j===W.i?Math.round((W.set-1)/Math.max(1,EX[j].sets)*100)+'%':'0');
+  $('#woP').innerHTML=W.paused?IC.play:IC.pause;$('#woP').setAttribute('aria-label',W.paused?'Продолжить':'Пауза');$('#wo').classList.toggle('paused',W.paused);
+  if(W.ph==='done'){$('#woStep').textContent='Готово';$('#woBody').innerHTML=`<small>Тренировка завершена · ${clk(W.el+(W.paused?0:Date.now()-W.t0))}</small><h2>Как прошло?</h2><p>+90 XP</p>`;
+    $('#woActs').innerHTML=`<div class="wrow3">${['Легко','Нормально','Тяжело'].map(t=>`<button class="wbtn" data-r>${t}</button>`).join('')}</div>`;
+    document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{done.add('wo');closeWo();addXP(90,$('#fab'));confetti(cv('--acc'));render(true,'wo');toast('Тренировка записана')});return}
+  const ex=EX[W.i],pp=W.paused?'Продолжить':'Пауза';
+  $('#woStep').textContent=`${W.i+1}/${EX.length}${ex.sets>1?` · подход ${W.set}/${ex.sets}`:''}`;
+  if(W.ph==='rest'){
+    $('#woBody').innerHTML=`<small>${W.paused?'Пауза':'Отдых'}</small>${ringHtml('',mmss((W.paused?W.left:W.end-Date.now())/1000),cv('--done'))}<p>Дальше: ${ex.n}${ex.sets>1?' · подход '+W.set:''}</p>`;
+    $('#woActs').innerHTML=`<div class="wrow"><button class="wbtn" id="wPause">${pp}</button><button class="wbtn" id="wPlus">+15 с</button></div><button class="wbtn pri" id="wSkipR">Пропустить отдых</button>`;
+    $('#wPause').onclick=togglePause;$('#wPlus').onclick=plus15;$('#wSkipR').onclick=()=>{W.run=false;W.ph='work';W.started=false;SND.tap();woDraw()};return}
+  if(ex.sec){
+    const val=W.started?mmss((W.paused?W.left:W.end-Date.now())/1000):mmss(ex.sec);
+    $('#woBody').innerHTML=`<small>${W.paused?'Пауза':ex.sets>1?'Подход '+W.set:'Начни'}</small><h2>${ex.n}</h2>${ringHtml('',val,cv('--acc'))}<p>${ex.tip}</p>`;
+    $('#woActs').innerHTML=W.started?`<div class="wrow"><button class="wbtn" id="wPause">${pp}</button><button class="wbtn" id="wPlus">+15 с</button></div><button class="wbtn pri" id="wDone">Готово</button>`
+      :`<button class="wbtn pri big" id="wStart">Старт · ${mmss(ex.sec)}</button><button class="sec2" id="woSkip">Пропустить</button>`;
+    if(W.started){$('#wPause').onclick=togglePause;$('#wPlus').onclick=plus15;$('#wDone').onclick=()=>{click();finishSet()}}
+    else{$('#wStart').onclick=()=>{if(W.paused)togglePause();startTimer(ex.sec);SND.resume();buzz(10);woDraw()};$('#woSkip').onclick=()=>{W.i++;W.set=1;SND.tap();if(W.i>=EX.length){W.ph='done'}woDraw()}}
+    return}
+  $('#woBody').innerHTML=`<small>${W.paused?'Пауза':ex.sets>1?'Подход '+W.set:'Начни'}</small><h2>${ex.n}</h2><span class="num big">${ex.reps}</span><p>повторов · ${ex.tip}</p>`;
   $('#woActs').innerHTML=`<button class="hold" id="woHold"><i></i><span>Удерживай — сделал</span></button><button class="sec2" id="woSkip">Пропустить</button>`;
-  bindHold($('#woHold'),()=>{const r=$('#woHold').getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,0,['#ffffff']);SND.done();setTimeout(()=>{if(sets&&W.set<sets){W.set++;W.rest=10}else{W.i++;W.set=1;W.rest=W.i<EX.length&&EX[W.i-1][4]?10:0}woDraw()},350)});
-  $('#woSkip').onclick=()=>{W.i++;W.set=1;W.rest=0;woDraw()}}
-addEventListener('keydown',e=>{if(e.key==='Escape'&&W)closeWo()});
+  bindHold($('#woHold'),()=>{const r=$('#woHold').getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,0,['#ffffff']);if(W.paused)togglePause();setTimeout(finishSet,300)});
+  $('#woSkip').onclick=()=>{W.i++;W.set=1;SND.tap();if(W.i>=EX.length){W.ph='done'}woDraw()}}
+addEventListener('keydown',e=>{if(e.key==='Escape'&&W)closeWo();if(e.key===' '&&W&&!e.target.closest('button'))togglePause()});
 
 /* --- старт --- */
-$('#snd').onclick=()=>{soundOn=!soundOn;try{localStorage.setItem('fd-sound',soundOn?'1':'0')}catch(e){}sndIcon();drawPrefs();if(soundOn)click()};sndIcon();
+
 function drawPrefs(){$('#pals').innerHTML=PALS.map((p,i)=>`<button data-pal="${i}" class="${i===pal?'on':''}" style="--a:${p[1]};--b:${p[2]}" aria-label="${p[0]}"><i></i></button>`).join('');$('#palN').textContent=PALS[pal][0];
   document.querySelectorAll('#packs button').forEach(b=>b.classList.toggle('on',soundOn?b.dataset.pk==='click':b.dataset.pk==='off'))}
 document.addEventListener('click',e=>{const pb=e.target.closest('[data-pal]');if(pb){pal=+pb.dataset.pal;try{localStorage.setItem('fd-pal',pal)}catch(_){}applyPal();drawPrefs();arc();
     const r=pb.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,0,[PALS[pal][1]]);SND.done();buzz(8);return}
   const kb=e.target.closest('[data-pk]');if(kb){const k=kb.dataset.pk;if(k==='off'){soundOn=false}else{soundOn=true;pack=k;try{localStorage.setItem('fd-pack',k)}catch(_){}}
     try{localStorage.setItem('fd-sound',soundOn?'1':'0')}catch(_){}sndIcon();drawPrefs();if(soundOn)click()}});
-drawPrefs();
+let vstyle='base';try{vstyle=localStorage.getItem('fd-style')||'base'}catch(e){}
+function applyStyle(){document.documentElement.classList.toggle('lg',vstyle==='lg');document.querySelectorAll('#styles button').forEach(b=>b.classList.toggle('on',b.dataset.st===vstyle))}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-st]');if(!b)return;vstyle=b.dataset.st;try{localStorage.setItem('fd-style',vstyle)}catch(_){}applyStyle();SND.tap();buzz(8)});
+applyStyle();drawPrefs();
+function drawWx(){const opts=[['auto','Авто'],['clear','Ясно'],['partly','Облака'],['cloudy','Пасмурно'],['rain','Дождь'],['snow','Снег'],['storm','Гроза'],['fog','Туман']];
+  $('#wxRow').innerHTML=opts.map(([k,t])=>`<button data-wx="${k}" class="${wxMode===k?'on':''}">${t}</button>`).join('');
+  let pos=null;try{pos=JSON.parse(localStorage.getItem('fd-pos')||'null')}catch(e){}$('#wxS').textContent=pos?'по месту':'место не задано';$('#wxPos').textContent=pos?'Обновить':'Разрешить'}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-wx]');if(b&&b.closest('#wxRow')){wxMode=b.dataset.wx;try{localStorage.setItem('fd-wx',wxMode)}catch(_){}drawWx();sky();SND.tap();return}
+  if(e.target.closest('#wxPos'))askPos()});
+drawWx();fetchWx();setInterval(fetchWx,30*60e3);
 sky();drawLv();render();setInterval(()=>{sky();arc()},60000);
 }
 </script>
