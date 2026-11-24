@@ -224,9 +224,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
     <div class="grp"><div>Подъём и отбой<span>07:00 – 23:00</span></div><div>Работа<span>09:00 – 18:00</span></div><div>Тренировка<span>после работы</span></div><div>Приёмы пищи<span>4 раза</span></div></div>
     <div class="sec"><h3>Цвет</h3><small id="palN"></small></div>
     <div class="pals" id="pals"></div>
-    <div class="sec"><h3>Звуки</h3></div>
-    <div class="seg" id="packs"><button data-pk="sfx">Игровые</button><button data-pk="retro">Ретро</button><button data-pk="soft">Мягкие</button><button data-pk="off">Выкл</button></div>
-    <p class="hint">Звуки «Игровые»: <a href="https://jdsherbert.itch.io/" style="color:inherit">JDSherbert — Ultimate UI SFX Pack</a></p>
+    <div class="sec"><h3>Звук</h3></div>
+    <div class="seg" id="packs" style="grid-template-columns:repeat(2,minmax(0,1fr))"><button data-pk="click">Щелчок при отметке</button><button data-pk="off">Выкл</button></div>
     <p class="hint">Остальные настройки в тестовой версии только для вида</p>
   </section>
 </div>
@@ -319,9 +318,13 @@ const PACKS={
   level:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.4,'triangle',.14,i*.09)),
   big:()=>{[392,523,659,784].forEach((f,i)=>tone(f,.5,'sine',.11,i*.06));tone(1047,.7,'triangle',.1,.3)},
   beep:()=>{tone(880,.12,'square',.06);tone(880,.12,'square',.06,.18)}}};
-const SND=new Proxy({},{get:(_,k)=>()=>{const p=PACKS[pack]||PACKS.sfx;const f=p[k];f&&f()}});
+/* один тихий щелчок только на отметку */
+function click(){const c=ac();if(!c||!soundOn)return;const t=c.currentTime;
+  const o=c.createOscillator(),v=c.createGain();o.type='sine';o.frequency.setValueAtTime(1500,t);o.frequency.exponentialRampToValueAtTime(700,t+.03);
+  v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(.09,t+.003);v.gain.exponentialRampToValueAtTime(.0001,t+.045);o.connect(v);v.connect(c.destination);o.start(t);o.stop(t+.06)}
+const SND=new Proxy({},{get:(_,k)=>()=>{if(k==='done')click()}});
 let holdOsc=null;
-function holdSound(on){const c=ac();if(!c||!soundOn)return;if(pack==='sfx'){if(on)playSfx('hold',.6);return}if(on){const t=c.currentTime,v=c.createGain(),o=c.createOscillator();
+function holdSound(on){return;const c=ac();if(!c||!soundOn)return;if(on){const t=c.currentTime,v=c.createGain(),o=c.createOscillator();
   if(pack==='retro'){o.type='square';o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(700,t+.7);const l=c.createOscillator(),lg=c.createGain();l.frequency.value=22;lg.gain.value=18;l.connect(lg);lg.connect(o.frequency);l.start(t);l.stop(t+1.2);v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(.045,t+.05)}
   else{o.type='sine';o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(520,t+.7);v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(.07,t+.08)}
   o.connect(v);v.connect(c.destination);o.start(t);holdOsc={o,v}}
@@ -448,15 +451,14 @@ function woDraw(){if(!W)return;const segs=document.querySelectorAll('#segs i b')
 addEventListener('keydown',e=>{if(e.key==='Escape'&&W)closeWo()});
 
 /* --- старт --- */
-$('#snd').onclick=()=>{soundOn=!soundOn;try{localStorage.setItem('fd-sound',soundOn?'1':'0')}catch(e){}sndIcon();drawPrefs();if(soundOn)SND.tap()};sndIcon();
+$('#snd').onclick=()=>{soundOn=!soundOn;try{localStorage.setItem('fd-sound',soundOn?'1':'0')}catch(e){}sndIcon();drawPrefs();if(soundOn)click()};sndIcon();
 function drawPrefs(){$('#pals').innerHTML=PALS.map((p,i)=>`<button data-pal="${i}" class="${i===pal?'on':''}" style="--a:${p[1]};--b:${p[2]}" aria-label="${p[0]}"><i></i></button>`).join('');$('#palN').textContent=PALS[pal][0];
-  document.querySelectorAll('#packs button').forEach(b=>b.classList.toggle('on',soundOn?b.dataset.pk===pack:b.dataset.pk==='off'))}
+  document.querySelectorAll('#packs button').forEach(b=>b.classList.toggle('on',soundOn?b.dataset.pk==='click':b.dataset.pk==='off'))}
 document.addEventListener('click',e=>{const pb=e.target.closest('[data-pal]');if(pb){pal=+pb.dataset.pal;try{localStorage.setItem('fd-pal',pal)}catch(_){}applyPal();drawPrefs();arc();
     const r=pb.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,0,[PALS[pal][1]]);SND.done();buzz(8);return}
   const kb=e.target.closest('[data-pk]');if(kb){const k=kb.dataset.pk;if(k==='off'){soundOn=false}else{soundOn=true;pack=k;try{localStorage.setItem('fd-pack',k)}catch(_){}}
-    try{localStorage.setItem('fd-sound',soundOn?'1':'0')}catch(_){}sndIcon();drawPrefs();if(soundOn)SND.level()}});
+    try{localStorage.setItem('fd-sound',soundOn?'1':'0')}catch(_){}sndIcon();drawPrefs();if(soundOn)click()}});
 drawPrefs();
-addEventListener('pointerdown',()=>{if(soundOn&&pack==='sfx')loadSfx()},{once:true});
 sky();drawLv();render();setInterval(()=>{sky();arc()},60000);
 }
 </script>
