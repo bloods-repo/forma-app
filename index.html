@@ -419,7 +419,14 @@ function NUT(){
   return{w,bmi,bmr:Math.round(bmr),tdee:Math.round(tdee/50)*50,kcal,prot,fat,carb,water};
 }
 const SHARE={'Завтрак':.25,'Обед':.35,'Перекус':.1,'Ужин':.3};
-function mealShares(){const ms=S.plan.meals,r=ms.map(e=>SHARE[e.n]??.15),s=r.reduce((a,b)=>a+b,0)||1;return Object.fromEntries(ms.map((e,i)=>[e.id,r[i]/s]))}
+const MSETS={2:[['Завтрак',.45,'плотный: белок + каша'],['Ужин',.55,'мясо/рыба + гарнир + овощи']],
+ 3:[['Завтрак',.3,'белок + каша'],['Обед',.4,'мясо/рыба + гарнир + овощи'],['Ужин',.3,'белок + овощи']],
+ 4:[['Завтрак',.25,'белок + каша'],['Обед',.35,'мясо/рыба + овощи'],['Перекус',.1,'фрукт или йогурт'],['Ужин',.3,'лёгкий, за 3 ч до сна']],
+ 5:[['Завтрак',.25,'белок + каша'],['Перекус',.1,'фрукт или йогурт'],['Обед',.3,'мясо/рыба + овощи'],['Полдник',.1,'творог или орехи'],['Ужин',.25,'белок + овощи']],
+ 6:[['Завтрак',.2,'белок + каша'],['Второй завтрак',.1,'фрукт или йогурт'],['Обед',.3,'мясо/рыба + овощи'],['Полдник',.1,'творог или орехи'],['Ужин',.2,'белок + овощи'],['Перекус перед сном',.1,'кефир или творог']]};
+function setMeals(n){const set=MSETS[n];if(!set)return;const old=S.plan.meals;
+  S.plan.meals=set.map(([nm,sh,d])=>{const e=old.find(x=>x.n===nm);return e?Object.assign(e,{sh}):Object.assign(X(nm,d),{sh})})}
+function mealShares(){const ms=S.plan.meals,r=ms.map(e=>e.sh??SHARE[e.n]??.15),s=r.reduce((a,b)=>a+b,0)||1;return Object.fromEntries(ms.map((e,i)=>[e.id,r[i]/s]))}
 const half=x=>{const v=Math.max(.5,Math.round(x*2)/2);return String(v).replace('.5','½').replace(/^0½/,'½')};
 function plate(n,sh,long){
   if(sh<.15)return 'фрукт, йогурт или горсть орехов';
@@ -439,11 +446,15 @@ function SCHED(k){
   let bf=wake+30;if(wo!=null&&p.wt==='morning')bf=wo+(strong?50:45);
   let lunch=workDay?work[0]+Math.round((work[1]-work[0])/60)*30:wake+300;if(lunch<bf+180)lunch=bf+180;
   let dinner=sleep-180;if(wo!=null&&wo>lunch&&wo<sleep-120)dinner=Math.max(dinner,Math.min(wo+(strong?75:60),sleep-120));
-  let snack=lunch+180;if(snack>dinner-90)snack=null;
+
   A(wake,'Подъём, стакан воды','x');
   if(workDay)A(work[0],'Работа / учёба до '+hm(work[1]),'x');
-  const MT={'Завтрак':bf,'Обед':lunch,'Перекус':snack,'Ужин':dinner};
-  S.plan.meals.forEach(e=>{if(MT[e.n]!=null)A(MT[e.n],e.n,'meal',e.id)});
+  const ms=S.plan.meals,nm=ms.length,last=nm>=6?Math.min(sleep-90,Math.max(dinner+120,sleep-120)):dinner,
+    lastMain=nm>=6?nm-2:nm-1,anc={0:bf};anc[lastMain]=dinner;if(nm>=6)anc[nm-1]=last;
+  const li=ms.findIndex(e=>e.n==='Обед');if(li>0&&li<lastMain)anc[li]=lunch;
+  const ks=Object.keys(anc).map(Number).sort((a,b)=>a-b);
+  ms.forEach((e,i)=>{let t;if(nm===1)t=lunch;else if(anc[i]!=null)t=anc[i];else{const a=ks.filter(k=>k<i).pop(),b=ks.find(k=>k>i);t=anc[a]+(anc[b]-anc[a])*(i-a)/(b-a)}
+    A(t,e.n,'meal',e.id)});
   if(wo!=null)A(wo,strong?'Тренировка':ex.map(e=>e.n).join(' + '),'wo');
   A(sleep-30,'Телефон в сторону, свет потише','x');
   A(sleep,'Отбой','x');
@@ -482,6 +493,7 @@ function renderMe(){
     <div class="fg"><label>Подъём<input type="time" name="wake" value="${esc(p.wake||'07:00')}"></label><label>Отбой<input type="time" name="sleep" value="${esc(p.sleep||'23:00')}"></label>
     <label>Работа / учёба с<input type="time" name="ws" value="${esc(p.ws||'09:00')}"></label><label>до<input type="time" name="we" value="${esc(p.we||'18:00')}"></label></div>
     <label>Рабочие дни<select name="wd">${o('wd',[['wk','Пн–Пт'],['all','Каждый день'],['none','Не работаю / свободный график']])}</select></label>
+    <label>Сколько раз в день ешь<select name="meals">${[2,3,4,5,6].map(v=>`<option value="${v}"${S.plan.meals.length===v?' selected':''}>${v} ${v<5?'раза':'раз'}</option>`).join('')}${S.plan.meals.length<2||S.plan.meals.length>6?`<option selected value="">${S.plan.meals.length} (свой список)</option>`:''}</select></label>
     <label>Когда удобно тренироваться<select name="wt">${o('wt',[['after','После работы'],['morning','Утром'],['evening','Вечером']])}</select></label>
     <button class="btn" style="margin-top:16px;width:100%">Сохранить и пересчитать</button>
   </form>
@@ -642,6 +654,7 @@ document.addEventListener('submit',e=>{
   const f=e.target;if(f.id!=='prof')return;e.preventDefault();
   const fd=Object.fromEntries(new FormData(f));
   S.prof=Object.assign(fd,{age:+fd.age,h:+fd.h,w:+fd.w,steps:+fd.steps||8000});
+  if(+fd.meals&&+fd.meals!==S.plan.meals.length)setMeals(+fd.meals);
   const sth=S.plan.habits.find(h=>/шаг/i.test(h.n));if(sth)sth.n=fmtN(S.prof.steps)+'+ шагов';
   const tk2=TODAY();if(!(parseFloat(Lr(tk2).kg)>0))L(tk2).kg=String(fd.w);
   const n=NUT();if(n)S.plan.water=n.water;
@@ -731,7 +744,7 @@ const RCP=[
 let foodF='Все';
 function renderFood(){
   const n=NUT(),sh=mealShares();
-  const mk=t=>{if(!n)return null;const m=S.plan.meals.find(e=>e.n===t);return m?n.kcal*sh[m.id]:null};
+  const mk=t=>{if(!n)return null;const m=S.plan.meals.find(e=>e.n===t)||(t==='Перекус'?S.plan.meals.find(e=>(sh[e.id]||1)<.15):null);return m?n.kcal*sh[m.id]:null};
   const list=RCP.filter(r=>foodF==='Все'||r.t===foodF);
   $('#v-food').innerHTML=`<div class="card" style="margin-bottom:18px"><h3>Простые рецепты с белком <span>${RCP.length} шт.</span></h3>
     <p class="muted" style="margin-top:0">${n?`Твоя норма: ${fmtN(n.kcal)} ккал и ${n.prot} г белка в день. У каждого рецепта написано, сколько порций нужно тебе.`:'Заполни профиль во вкладке «Я» — посчитаю, сколько порций нужно именно тебе.'} Калорийность приблизительная.</p>
