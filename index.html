@@ -468,8 +468,11 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const key=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const parse=k=>{const[a,b,c]=k.split('-').map(Number);return new Date(a,b-1,c)};
 const add=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
-const TODAY=()=>key(new Date());
-let cur=TODAY(),view='today',planDay=new Date().getDay();
+// граница дня: после отбоя + 3 ч (но не позже чем за 30 мин до подъёма); без профиля — полночь
+function cutM(){const p=S&&S.prof;if(!p||!p.wake||!p.sleep)return 0;const t=x=>{const[a,b]=String(x).split(':').map(Number);return(a||0)*60+(b||0)};
+  const w=t(p.wake);let s=t(p.sleep);if(s<=w)s+=1440;return Math.max(0,Math.min(Math.max(s-1440,0)+180,w-30))}
+const TODAY=()=>{const d=new Date(),c=cutM();if(d.getHours()*60+d.getMinutes()<c)d.setDate(d.getDate()-1);return key(d)};
+let cur=TODAY(),view='today',planDay=parse(TODAY()).getDay();
 
 const DAY=864e5;
 const weekOf=k=>Math.max(0,Math.floor((parse(k)-parse(S.plan.start))/DAY/7));
@@ -735,7 +738,7 @@ function xpTotal(){let x=0;const g=stepsGoal();
 const need=n=>50*n*(n-1);
 function lvl(x){let n=1;while(x>=need(n+1))n++;return{n,cur:x-need(n),span:need(n+1)-need(n),name:n<=LVN.length?LVN[n-1]:LVN[LVN.length-1]+' '+(n-LVN.length+1)}}
 /* ================= НОВЫЙ ИНТЕРФЕЙС ================= */
-const APPV=22;
+const APPV=23;
 const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const buzz=v=>{try{navigator.vibrate&&navigator.vibrate(v)}catch(e){}};
@@ -810,7 +813,7 @@ function drawHead(){const n=nowM(),g=n<300?'Доброй ночи':n<720?'Доб
 /* --- время и задачи дня --- */
 const nowM=()=>{const d=new Date();return d.getHours()*60+d.getMinutes()};
 function bounds(){const p=S.prof||{};const w=tm(p.wake||'07:00');let s=tm(p.sleep||'23:00');if(s<=w)s+=1440;return[w,s]}
-function nowRel(){const[w,s]=bounds();if(cur<TODAY())return s+1;let n=nowM();if(n<w-60&&n+1440<=s+120)n+=1440;return n}
+function nowRel(){const[w,s]=bounds();if(cur<TODAY())return s+1;let n=nowM();if(n<cutM())n+=1440;return n}
 const TIP={wake:'Начни день со стакана воды',screen:'Свет потише, через 30 минут сон',sleep:'7+ часов — мышцы растут во сне'};
 function woInfo(k){const ex=S.plan.days[parse(k).getDay()]||[];let sec=0,sets=0;
   ex.forEach(e=>{const d=pdose(dose(e,k));const n=Math.max(1,d.sets);sets+=n;sec+=n*(d.sec||45)});sec+=Math.max(0,sets-ex.length)*REST()+Math.max(0,ex.length-1)*30;
@@ -928,7 +931,7 @@ function habits(){const l=Lr(cur),hs=S.plan.habits;$('#habT').textContent=hs.len
   $('#habits').innerHTML=hs.length?hs.map(e=>`<button class="hb${l.h[e.id]?' on':''}" data-hab="${esc(e.id)}"><i></i><span>${esc(e.n)}</span></button>`).join(''):'<p class="empty" style="grid-column:1/-1">Добавь привычки в профиле</p>'}
 function banners(){const b=[],t=TODAY();
   if(cur===t&&weekOf(t)>=1&&(!lastRec()||lastRec()<key(add(new Date(),-28))))b.push(`<div class="nb"><span>Пора проверить рекорды — раз в 4 недели</span><button class="btn" data-go="prog">Открыть</button></div>`);
-  const a=cur===t&&(S.plan.days[new Date().getDay()]||[]).length?advice():null;if(a)b.push(`<div class="nb"><span>${a.m}</span><button class="btn" data-sh="${a.t}">${a.t==='fast'?'Перейти на этап':'Повторить неделю'}</button></div>`);
+  const a=cur===t&&(S.plan.days[parse(TODAY()).getDay()]||[]).length?advice():null;if(a)b.push(`<div class="nb"><span>${a.m}</span><button class="btn" data-sh="${a.t}">${a.t==='fast'?'Перейти на этап':'Повторить неделю'}</button></div>`);
   $('#banners').innerHTML=b.join('')}
 function renderToday(anim,pop){const tasks=TASKS(cur);sky();arc(pop,tasks);nowCard(anim,tasks);banners();list(tasks);tiles();habits()}
 
@@ -950,7 +953,7 @@ function tileSheet(kind){const l=Lr(cur);
     const sp=$('#slplan');if(sp)sp.onclick=()=>{$('#slb').value=p.sleep;$('#slw').value=p.wake;SND.tap()};
     $('#sheet').querySelectorAll('[data-slq]').forEach(b=>b.onclick=()=>{$('#sheet').querySelectorAll('[data-slq]').forEach(x=>x.classList.toggle('on',x===b));SND.tap()});
     $('#shOk').onclick=()=>{const q=$('#sheet [data-slq].on');act($('#shOk'),()=>{const x=L(cur);x.sl=Object.assign({},x.sl,{b:$('#slb').value,w:$('#slw').value},q?{q:+q.dataset.slq}:{});autoHabit(cur)},true);closeSheet();renderToday()}}}
-function daySheet(){const t=new Date();let h='';for(let i=0;i<10;i++){const k=key(add(t,-i)),p=S.log[k]?score(k).p:0,d=parse(k);
+function daySheet(){const t=parse(TODAY());let h='';for(let i=0;i<10;i++){const k=key(add(t,-i)),p=S.log[k]?score(k).p:0,d=parse(k);
     h+=`<button class="rr" data-day="${k}"><span class="ico" style="background:color-mix(in srgb,var(--done) ${Math.round(10+p*60)}%,var(--card2));color:#fff">${d.getDate()}</span><span><b>${i===0?'Сегодня':i===1?'Вчера':DL[d.getDay()][0].toUpperCase()+DL[d.getDay()].slice(1)}</b><small>${dfmt(k)}</small></span><em>${Math.round(p*100)}%</em></button>`}
   openSheet(`<h2>Какой день открыть?</h2><p>Можно отметить то, что забыл</p><div class="rlist">${h}</div>`,1);
   $('#sheet').querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{cur=b.dataset.day;closeSheet();go('today')})}
@@ -1004,14 +1007,14 @@ function rings(a,b,c){const RR=[[58,cv('--acc'),a],[44,cv('--done'),b],[30,'#4aa
   requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('#rings circle[data-to]').forEach(x=>x.style.strokeDashoffset=x.dataset.to)))}
 
 /* --- прогресс --- */
-function streakNow(){const t=new Date();let s=0;for(let i=0;i<400;i++){const k=key(add(t,-i));if(score(k).p>=.7)s++;else if(i>0)break}return s}
+function streakNow(){const t=parse(TODAY());let s=0;for(let i=0;i<400;i++){const k=key(add(t,-i));if(score(k).p>=.7)s++;else if(i>0)break}return s}
 function stats(){const ks=Object.keys(S.log).sort();let run=0,p7=null,best=0;for(const k of ks){if(score(k).p>=.7){run=p7&&key(add(parse(p7),1))===k?run+1:1;p7=k;best=Math.max(best,run)}}
-  const t=new Date(),mon=key(new Date(t.getFullYear(),t.getMonth(),1));const woM=ks.filter(k=>k>=mon&&woAllDone(k)).length;
+  const t=parse(TODAY()),mon=key(new Date(t.getFullYear(),t.getMonth(),1));const woM=ks.filter(k=>k>=mon&&woAllDone(k)).length;
   let sum=0,n=0;for(let i=0;i<30;i++){const k=key(add(t,-i));if(S.log[k]){sum+=score(k).p;n++}}
   const kg=ks.filter(k=>parseFloat(S.log[k].kg)>0);const dk=kg.length>1?parseFloat(S.log[kg[kg.length-1]].kg)-parseFloat(S.log[kg[0]].kg):null;
   return{best,woM,avg:n?Math.round(sum/n*100):0,dk,kgLast:kg.length?parseFloat(S.log[kg[kg.length-1]].kg):null}}
 function renderProg(){const xp=xpTotal(),v=lvl(xp),st=stats(),sk=streakNow(),el=$('#s-prog');const got=Object.keys(S.badges||{}).length;
-  const t=new Date(),ti=(t.getDay()+6)%7,mon=add(t,-ti),D=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const t=parse(TODAY()),ti=(t.getDay()+6)%7,mon=add(t,-ti),D=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
   const vals=D.map((_,i)=>{const k=key(add(mon,i));return i>ti?0:S.log[k]?score(k).p:0}),past=vals.slice(0,ti+1);
   const good=d=>S.prof&&S.prof.goal==='gain'?d>0:d<0;const nextN=lvl(need(v.n+1)).name;
   const MNs=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
@@ -1032,8 +1035,8 @@ function renderProg(){const xp=xpTotal(),v=lvl(xp),st=stats(),sk=streakNow(),el=
   $('#toAch').onclick=()=>go('ach');drawWeight()}
 function bars(title,vals,goal,fv){const has=vals.filter(x=>x.v>0);if(!has.length)return'';const mx=Math.max(goal*1.15,...vals.map(x=>x.v||0)),avg=has.reduce((a,x)=>a+x.v,0)/has.length;
   return `<div class="card2"><div class="hrow"><h3>${title}</h3><small>в среднем <b>${fv(avg)}</b></small></div><div class="bars">${vals.map(x=>`<div title="${dfmt(x.k)}: ${x.v?fv(x.v):'—'}"><i class="${x.v>=goal?'ok':''}" style="height:${Math.round((x.v||0)/mx*100)}%"></i><small>${parse(x.k).getDate()}</small></div>`).join('')}</div></div>`}
-function last14(f){const t=new Date(),a=[];for(let i=13;i>=0;i--){const k=key(add(t,-i));a.push({k,v:S.log[k]?f(S.log[k]):0})}return a}
-function heat(){const t=new Date(),start=add(t,-28-((t.getDay()+6)%7));let h='';
+function last14(f){const t=parse(TODAY()),a=[];for(let i=13;i>=0;i--){const k=key(add(t,-i));a.push({k,v:S.log[k]?f(S.log[k]):0})}return a}
+function heat(){const t=parse(TODAY()),start=add(t,-28-((t.getDay()+6)%7));let h='';
   for(let i=0;i<35;i++){const d=add(start,i),k=key(d);if(d>t){h+='<i class="fut"></i>';continue}const p=S.log[k]?score(k).p:0;
     h+=`<i data-day="${k}" title="${dfmt(k)}: ${Math.round(p*100)}%" class="${k===TODAY()?'t':''}" style="background:${p?`color-mix(in srgb,var(--done) ${Math.round(15+p*85)}%,#262c3d)`:'#262c3d'}"></i>`}return h}
 function drawWeight(){const s=$('#wsvg');if(!s)return;const pts=Object.keys(S.log).sort().filter(k=>parseFloat(S.log[k].kg)>0).slice(-60).map(k=>({k,v:parseFloat(S.log[k].kg)}));
@@ -1302,7 +1305,7 @@ function setSync(m){syncMsg=m;const e=$('#svst');if(e)e.textContent=m}
 async function api(p,b){const c=SV();if(!c||!c.url)throw Error('Сервер не указан');
   const r=await fetch(c.url.replace(/\/+$/,'')+p,{method:b?'POST':'GET',headers:{'Authorization':'Bearer '+c.key,'Content-Type':'application/json','ngrok-skip-browser-warning':'1'},body:b?JSON.stringify(b):undefined});
   if(r.status===401)throw Error('неверный ключ');if(!r.ok)throw Error('сервер ответил '+r.status);return r.json()}
-function buildRem(){const out=[],t=new Date();if(!S.prof)return out;const n=NUT(),sh=mealShares();
+function buildRem(){const out=[],t=parse(TODAY());if(!S.prof)return out;const n=NUT(),sh=mealShares();
   for(let dd=0;dd<2;dd++){const d=add(t,dd),k=key(d),base=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(),ex=S.plan.days[d.getDay()]||[],at=m=>base+Math.round(m)*60000;
     for(const it of SCHED(k)){
       if(it.kind==='wo'){const ids=ex.map(e=>e.id);
@@ -1361,7 +1364,7 @@ setInterval(()=>{const t=TODAY();if(t!==lastToday){if(cur===lastToday)cur=t;last
 
 }
 </script>
-<script>window.FORMA_V=22;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+<script>window.FORMA_V=23;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 function formaCheck(){fetch("version.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=parseInt(v);if(!(v>window.FORMA_V)||document.querySelector(".upd"))return;
   const b=document.createElement("div");b.className="upd";b.innerHTML='<span>Есть обновление</span><button class="btn">Обновить</button>';
   b.querySelector("button").onclick=async()=>{try{for(const k of await caches.keys())await (await caches.open(k)).delete("index.html")}catch(e){}location.reload()};document.body.appendChild(b)}).catch(()=>{})}
