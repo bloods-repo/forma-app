@@ -108,7 +108,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .rc{flex:0 0 74%;scroll-snap-align:start;border-radius:var(--r);padding:16px;min-height:170px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden}
 .rc b{font-size:18px;line-height:1.15}.rc small{opacity:.85;font-size:13px;margin-top:4px}
 .rc .big{position:absolute;right:-10px;top:-18px;font-size:110px;font-weight:800;opacity:.14;line-height:1}
-/* прогресс */
+/* прогресс (старое) */
 .lvl{background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 38%,#13172a),#13172a);border-radius:var(--r);padding:18px;display:flex;gap:16px;align-items:center;border:1px solid color-mix(in srgb,var(--acc) 40%,transparent)}
 .lvl .bn{width:76px;height:76px;border-radius:24px;background:#ffffff14;display:grid;place-items:center;font-size:36px}
 .lvl b{font-size:20px;display:block}.lvl small{color:#c9c5e8;font-size:13px}
@@ -197,6 +197,15 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 @media(prefers-reduced-motion:reduce){.clouds i,.rain b,.snow,.bolt{animation:none!important}}
 
 /* прогресс */
+.ttlrow{display:flex;align-items:center;gap:10px;margin:8px 2px 14px}.ttlrow .ttl{margin:0}
+.trophy{margin-left:auto;position:relative;width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd76a,#f5a623 60%,#c97a0a);display:grid;place-items:center;box-shadow:0 8px 20px -8px #f5a623,inset 0 2px 2px #fff8;transition:transform .25s var(--spring)}
+.trophy:active{transform:scale(.9)}.trophy svg{width:24px;height:24px;fill:none;stroke:#4a2a00;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.trophy span{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--acc);color:var(--accInk);font-size:11px;display:grid;place-items:center;border:2px solid var(--bg)}
+.back{width:44px;height:44px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.back svg{width:20px;height:20px;fill:none;stroke:var(--ink);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.achsum{background:linear-gradient(135deg,color-mix(in srgb,#f5a623 22%,var(--card)),var(--card));border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.achsum>div:first-child{display:flex;justify-content:space-between;align-items:baseline}.achsum b{font-size:28px}.achsum small{color:var(--mut);font-size:13px}
+.achsum .pb{height:10px;border-radius:5px;margin-top:10px}.achsum .pb i{background:linear-gradient(90deg,#f5a623,#ffd76a)}
 .pg-hero{display:flex;gap:18px;align-items:center;background:radial-gradient(120% 120% at 0% 0%,color-mix(in srgb,var(--acc) 26%,var(--card)),var(--card) 60%);border:1px solid var(--line);border-radius:26px;padding:18px}
 .pg-ring{position:relative;width:128px;flex:none;aspect-ratio:1}.pg-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .pg-ring circle{fill:none;stroke-width:12;stroke-linecap:round}.pg-ring .t{stroke:var(--line)}.pg-ring .p{stroke-dasharray:377;stroke-dashoffset:377;transition:stroke-dashoffset 1.2s var(--ease);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--acc) 60%,transparent))}
@@ -243,11 +252,6 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .sheet .meta2{display:flex;justify-content:space-between;color:var(--mut);font-size:13px}
 .sheet button.close{margin-top:16px;width:100%;height:52px;border-radius:16px;background:var(--card2);font-weight:800}
 
-/* Liquid Glass — только нижняя панель */
-.tb{background:radial-gradient(120% 90% at 20% -20%,#ffffff38,transparent 50%),linear-gradient(140deg,#ffffff1f,#ffffff08);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);border:1px solid #ffffff33;border-radius:34px;
-  box-shadow:inset 0 1px 0 #ffffff70,inset 0 -1px 0 #ffffff1a,inset 1px 0 0 #ffffff26,inset -1px 0 0 #ffffff12,0 18px 40px -14px #000d}
-.tb>button.on{background:#ffffff22;border-radius:22px;box-shadow:inset 0 1px 0 #ffffff55;color:#fff}.tb>button.on::after{display:none}
-.tb .fab{background:radial-gradient(circle at 32% 24%,#ffffffb0,transparent 38%),linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:inset 0 2px 1px #ffffff90,inset 0 -6px 12px #0003,0 0 0 1px #ffffff40,0 12px 28px -6px var(--acc)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.wo{clip-path:none}}
 @media(min-width:700px){.app{padding-top:10px}}
 </style>
@@ -304,7 +308,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 
   <!-- ПРОГРЕСС -->
   <section class="scr" id="s-prog">
-    <h1 class="ttl">Прогресс</h1>
+    <div class="ttlrow"><h1 class="ttl">Прогресс</h1><button class="trophy" id="toAch" aria-label="Достижения"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8"/></svg><span class="num" id="achBadge">6</span></button></div>
     <div class="pg-hero">
       <div class="pg-ring"><svg viewBox="0 0 140 140"><defs><linearGradient id="xpg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--acc)"/><stop offset="1" stop-color="var(--acc2)"/></linearGradient></defs><circle cx="70" cy="70" r="60" class="t"/><circle cx="70" cy="70" r="60" class="p" id="pgArc" stroke="url(#xpg)"/></svg><div><b class="num" id="pgLv">3</b><small>уровень</small></div></div>
       <div class="pg-info"><b id="pgName">Упорный</b><span class="num" id="pgXp">120 / 300 XP</span><small id="pgNext">ещё 180 XP до «Крепкий»</small>
@@ -318,10 +322,6 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       <div><small>Вес</small><b class="num" style="color:var(--done)">−1,8</b><em>кг с начала</em></div>
     </div>
     <div class="card2"><div class="hrow"><h3>Вес</h3><small><b class="num">89,4</b> кг · цель 85</small></div><div class="wchart"><svg id="wsvg"></svg></div></div>
-    <div class="sec"><h3>Достижения</h3><small id="achCnt"></small></div>
-    <div class="near" id="near"></div>
-    <div class="seg" id="achF" style="grid-template-columns:repeat(3,minmax(0,1fr));margin:12px 0 10px"><button data-af="all" class="on">Все</button><button data-af="got">Получены</button><button data-af="todo">В процессе</button></div>
-    <div class="ach" id="ach"></div>
     <div class="sec"><h3>Рекорды</h3><small>проверка раз в 2 недели</small></div>
     <div class="recs">
       <div><span>Отжимания подряд</span><b class="num">14</b><em>+6</em></div>
@@ -330,6 +330,16 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
     </div>
     <div class="sec"><h3>5 недель</h3><small>ярче — больше сделано</small></div>
     <div class="heat" id="heat"></div>
+  </section>
+
+  <!-- ДОСТИЖЕНИЯ (только из прогресса) -->
+  <section class="scr" id="s-ach">
+    <div class="ttlrow"><button class="back" id="achBack" aria-label="Назад к прогрессу"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 class="ttl" style="flex:1">Достижения</h1></div>
+    <div class="achsum"><div><b class="num" id="achCnt">6 из 20</b><small id="achXp"></small></div><div class="pb"><i id="achBar" style="width:0"></i></div></div>
+    <div class="sec"><h3>Ближе всего</h3></div>
+    <div class="near" id="near"></div>
+    <div class="seg" id="achF" style="grid-template-columns:repeat(3,minmax(0,1fr));margin:16px 0 10px"><button data-af="all" class="on">Все</button><button data-af="got">Получены</button><button data-af="todo">В процессе</button></div>
+    <div class="ach" id="ach"></div>
   </section>
 
   <!-- ПРОФИЛЬ -->
@@ -604,11 +614,15 @@ function renderProg(){const a=LV[lvl-1]||0,b=LV[lvl]||a+500,k=(xp-a)/(b-a);
   $('#wk').innerHTML=D.map((d,i)=>`<div class="${i===t?'tod':i>t?'fut':''}"><i><b data-h="${Math.round(vals[i]*100)}" class="${vals[i]>=1?'full':''}"></b></i><span>${d}</span></div>`).join('');
   requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('#wk b').forEach((b,i)=>setTimeout(()=>b.style.height=b.dataset.h+'%',i*60))));
   const past=vals.slice(0,t+1);$('#wkAvg').textContent=Math.round(past.reduce((x,y)=>x+y,0)/past.length*100)+'%';
-  const got=ACH.filter(x=>x[5]>=x[6]);$('#achCnt').textContent=`${got.length} из ${ACH.length}`;
+  $('#achBadge').textContent=ACH.filter(x=>x[5]>=x[6]).length;
+  drawWeight();heat();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('#s-prog .pb i[data-w]').forEach(i=>i.style.width=i.dataset.w+'%')))}
+function renderAch(){const got=ACH.filter(x=>x[5]>=x[6]),rx=x=>x[4]==='e'?300:x[4]==='r'?150:50;
+  $('#achCnt').textContent=`${got.length} из ${ACH.length}`;$('#achXp').textContent=`+${got.reduce((a,x)=>a+rx(x),0)} XP получено`;
   const near=ACH.filter(x=>x[5]<x[6]&&x[5]>0).sort((p,q)=>q[5]/q[6]-p[5]/p[6]).slice(0,4);
   $('#near').innerHTML=near.map(x=>`<button class="nc" data-ach="${x[0]}">${medal(x)}<span style="flex:1"><b>${x[1]}</b><small>${fmtP(x[5],x[6])} · ${x[2].toLowerCase()}</small><div class="pb"><i style="width:0" data-w="${Math.round(x[5]/x[6]*100)}"></i></div></span></button>`).join('');
-  drawAch();drawWeight();heat();
-  requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('#s-prog .pb i[data-w]').forEach(i=>i.style.width=i.dataset.w+'%')))}
+  drawAch();const bar=$('#achBar');bar.style.width=0;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{bar.style.width=Math.round(got.length/ACH.length*100)+'%';document.querySelectorAll('#near .pb i[data-w]').forEach(i=>i.style.width=i.dataset.w+'%')}))}
 function drawAch(){const L=ACH.filter(x=>achF==='all'||(achF==='got'?x[5]>=x[6]:x[5]<x[6])).sort((p,q)=>(q[5]>=q[6])-(p[5]>=p[6]));
   $('#ach').innerHTML=L.map((x,i)=>{const g=x[5]>=x[6];return `<button class="at ${g?'got':'lock'}" data-ach="${x[0]}" style="animation-delay:${i*30}ms">${medal(x)}<b>${x[1]}</b>${g?`<small>${x[7]}</small>`:`<div class="pb"><i style="width:${Math.round(x[5]/x[6]*100)}%"></i></div><small>${fmtP(x[5],x[6])}</small>`}</button>`}).join('');
   document.querySelectorAll('#achF button').forEach(b=>b.classList.toggle('on',b.dataset.af===achF))}
@@ -637,7 +651,10 @@ document.addEventListener('click',e=>{const a=e.target.closest('[data-ach]');if(
 
 /* --- навигация --- */
 const ORDER=['today','food','prog','me'];let cur='today';
-document.querySelectorAll('.tb>button[data-s]').forEach(b=>b.onclick=()=>{const to=b.dataset.s;if(to===cur)return;const back=ORDER.indexOf(to)<ORDER.indexOf(cur);cur=to;
+function showSub(id,back){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on','l'));const s=$('#s-'+id);s.classList.add('on');if(back)s.classList.add('l');scrollTo({top:0});buzz(6);SND.tap()}
+$('#toAch').onclick=()=>{showSub('ach');renderAch()};
+$('#achBack').onclick=()=>{showSub('prog',true);renderProg()};
+document.querySelectorAll('.tb>button[data-s]').forEach(b=>b.onclick=()=>{const to=b.dataset.s;if(to===cur&&!$('#s-ach').classList.contains('on'))return;const back=ORDER.indexOf(to)<ORDER.indexOf(cur);cur=to;
   document.querySelectorAll('.tb>button[data-s]').forEach(x=>x.classList.toggle('on',x===b));
   document.querySelectorAll('.scr').forEach(s=>{s.classList.remove('on','l')});const s=$('#s-'+to);s.classList.add('on');if(back)s.classList.add('l');
   scrollTo({top:0});buzz(5);SND.tap();if(to==='food')rings();if(to==='prog'){drawLv();renderProg()}});
