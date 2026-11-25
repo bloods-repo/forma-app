@@ -740,7 +740,7 @@ function xpTotal(){let x=0;const g=stepsGoal();
 const need=n=>50*n*(n-1);
 function lvl(x){let n=1;while(x>=need(n+1))n++;return{n,cur:x-need(n),span:need(n+1)-need(n),name:n<=LVN.length?LVN[n-1]:LVN[LVN.length-1]+' '+(n-LVN.length+1)}}
 /* ================= НОВЫЙ ИНТЕРФЕЙС ================= */
-const APPV=24;
+const APPV=25;
 const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const buzz=v=>{try{navigator.vibrate&&navigator.vibrate(v)}catch(e){}};
@@ -1183,7 +1183,9 @@ let W=null;const RING=628.3;
 const mmss=s=>{s=Math.max(0,Math.ceil(s));return s>=60?Math.floor(s/60)+':'+String(s%60).padStart(2,'0'):String(s)};
 const clk=ms=>{const s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
 const IC={pause:'<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>',play:'<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>'};
-function woList(){const ex=S.plan.days[parse(cur).getDay()]||[],l=Lr(cur);return ex.map(e=>{const d=pdose(dose(e,cur)),t=tech(e.n)||[];return{e,n:e.n.split(':')[0],pre:d.pre,sets:Math.max(1,d.sets),reps:d.reps,sec:d.sec,note:d.note,tip:t[1]||t[0]||'',done:!!l.x[e.id]}})}
+function woList(){const ex=S.plan.days[parse(cur).getDay()]||[],l=Lr(cur);return ex.map(e=>{const d=pdose(dose(e,cur)),t=tech(e.n)||[];return{e,n:e.n.split(':')[0],pre:d.pre,sets:Math.max(1,d.sets),reps:d.reps,sec:d.sec,note:d.note,tip:WTIP(e.n)||t[1]||t[0]||'',done:!!l.x[e.id]}})}
+// подсказки под таймером, где одной строки из техники мало
+const WTIP=n=>n.startsWith('Разминка')?'Сначала вращения суставами: шея, плечи, локти, таз, колени, стопы — по 8–10 раз. Остаток времени — ходьба на месте, колени повыше':'';
 function openWo(e){const EX=woList();if(!EX.length){toast(cur===TODAY()?'Сегодня день отдыха — тренировки нет':'В этот день тренировки не было');SND.tap();return}
   SND.open();const src=e&&e.currentTarget&&e.currentTarget.getBoundingClientRect?e.currentTarget.getBoundingClientRect():$('#fab').getBoundingClientRect();
   const wo=$('#wo');wo.style.setProperty('--cx',(src.left+src.width/2)+'px');wo.style.setProperty('--cy',(src.top+src.height/2)+'px');
@@ -1381,7 +1383,7 @@ setInterval(()=>{const t=TODAY();if(t!==lastToday){if(cur===lastToday)cur=t;last
 
 }
 </script>
-<script>window.FORMA_V=24;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+<script>window.FORMA_V=25;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 function formaCheck(){fetch("version.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=parseInt(v);if(!(v>window.FORMA_V)||document.querySelector(".upd"))return;
   const b=document.createElement("div");b.className="upd";b.innerHTML='<span>Есть обновление</span><button class="btn">Обновить</button>';
   b.querySelector("button").onclick=async()=>{try{for(const k of await caches.keys())await (await caches.open(k)).delete("index.html")}catch(e){}location.reload()};document.body.appendChild(b)}).catch(()=>{})}
