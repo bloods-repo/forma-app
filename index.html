@@ -352,6 +352,14 @@ details.card[open]>summary{margin-bottom:12px}
 
 .now .hint{color:var(--acc);font-weight:700;font-size:14px;margin-top:-4px}
 
+.wo .pose{max-width:340px;margin:14px auto 0;text-align:center}
+.wo .pose small{display:block;color:#ffffffa0;font-size:13px;font-weight:700;letter-spacing:.02em}
+.wo .pose small b{color:#fff}.wo .pose small b.sw{color:var(--done);animation:swp .6s var(--spring)}
+.wo .pose>b{display:block;font-size:22px;font-weight:800;margin:4px 0 6px}
+.wo .pose p{margin:0;font-size:15px;line-height:1.4;color:#ffffffd0}
+@keyframes swp{0%{transform:scale(.6);opacity:0}100%{transform:none;opacity:1}}
+.steps b{color:var(--ink)}
+
 .toast{white-space:normal;max-width:calc(100% - 32px);width:max-content;text-align:center;pointer-events:none}
 
 </style>
@@ -740,7 +748,7 @@ function xpTotal(){let x=0;const g=stepsGoal();
 const need=n=>50*n*(n-1);
 function lvl(x){let n=1;while(x>=need(n+1))n++;return{n,cur:x-need(n),span:need(n+1)-need(n),name:n<=LVN.length?LVN[n-1]:LVN[LVN.length-1]+' '+(n-LVN.length+1)}}
 /* ================= НОВЫЙ ИНТЕРФЕЙС ================= */
-const APPV=25;
+const APPV=26;
 const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const buzz=v=>{try{navigator.vibrate&&navigator.vibrate(v)}catch(e){}};
@@ -1112,7 +1120,7 @@ function openAch(id){const x=ACH.find(a=>a[0]===id);if(!x)return;const g=x[5]>=x
 
 /* --- программа тренировок --- */
 function renderPlan(){const ex=S.plan.days[planDay]||(S.plan.days[planDay]=[]),t=TODAY(),wk=weekOf(t),st=stageOf(t),left=st<3?(st+1)*2-wk:0,a=advice();
-  const lib=Object.keys(TECH).filter(k=>k!=='Прогулка').map(k=>`<details class="lib"><summary>${esc(k)}</summary>${picHtml(k)}<ol class="steps">${TECH[k].map(x=>`<li>${esc(x)}</li>`).join('')}</ol></details>`).join('');
+  const lib=Object.keys(TECH).filter(k=>k!=='Прогулка').map(k=>`<details class="lib"><summary>${esc(k)}</summary>${picHtml(k)}${SEQ[k]?`<p class="muted" style="margin:8px 0 0">${esc(TECH[k].slice(1).join('. '))}</p>${seqList(k)}`:`<ol class="steps">${TECH[k].map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`}</details>`).join('');
   $('#s-plan').innerHTML=`<div class="ttlrow"><button class="back" data-go="${planFrom}" aria-label="Назад"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 class="ttl" style="flex:1">Программа</h1></div>
   <div class="card"><h3>Неделя ${wk+1} из 8 <span>этап ${st+1} из 4</span></h3>
     <div class="stg">${STAGES.map((n,i)=>`<i class="${i<st?'past':i===st?'on':''}" title="${n}"></i>`).join('')}</div>
@@ -1183,9 +1191,9 @@ let W=null;const RING=628.3;
 const mmss=s=>{s=Math.max(0,Math.ceil(s));return s>=60?Math.floor(s/60)+':'+String(s%60).padStart(2,'0'):String(s)};
 const clk=ms=>{const s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
 const IC={pause:'<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>',play:'<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>'};
-function woList(){const ex=S.plan.days[parse(cur).getDay()]||[],l=Lr(cur);return ex.map(e=>{const d=pdose(dose(e,cur)),t=tech(e.n)||[];return{e,n:e.n.split(':')[0],pre:d.pre,sets:Math.max(1,d.sets),reps:d.reps,sec:d.sec,note:d.note,tip:WTIP(e.n)||t[1]||t[0]||'',done:!!l.x[e.id]}})}
+function woList(){const ex=S.plan.days[parse(cur).getDay()]||[],l=Lr(cur);return ex.map(e=>{const d=pdose(dose(e,cur)),t=tech(e.n)||[];return{e,n:e.n.split(':')[0],pre:d.pre,sets:Math.max(1,d.sets),reps:d.reps,sec:d.sec,note:d.note,tip:WTIP(e.n)||t[1]||t[0]||'',done:!!l.x[e.id]}}).map(x=>{const q=seqOf(x.e.n);if(q&&x.sec){x.seq=q;x.plan=seqPlan(q,x.sec)}return x})}
 // подсказки под таймером, где одной строки из техники мало
-const WTIP=n=>n.startsWith('Разминка')?'Сначала вращения суставами: шея, плечи, локти, таз, колени, стопы — по 8–10 раз. Остаток времени — ходьба на месте, колени повыше':'';
+const WTIP=n=>'';
 function openWo(e){const EX=woList();if(!EX.length){toast(cur===TODAY()?'Сегодня день отдыха — тренировки нет':'В этот день тренировки не было');SND.tap();return}
   SND.open();const src=e&&e.currentTarget&&e.currentTarget.getBoundingClientRect?e.currentTarget.getBoundingClientRect():$('#fab').getBoundingClientRect();
   const wo=$('#wo');wo.style.setProperty('--cx',(src.left+src.width/2)+'px');wo.style.setProperty('--cy',(src.top+src.height/2)+'px');
@@ -1195,7 +1203,7 @@ function openWo(e){const EX=woList();if(!EX.length){toast(cur===TODAY()?'Сег�
   try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>{if(W)W.lock=w}).catch(()=>{})}catch(_){}
   clearInterval(W.tm);W.tm=setInterval(woTick,100);woDraw()}
 function closeWo(){SND.close();$('#wo').classList.remove('open');document.body.style.overflow='';if(W){clearInterval(W.tm);try{W.lock&&W.lock.release()}catch(_){}}W=null;render()}
-function startTimer(sec){W.tot=sec*1000;W.end=Date.now()+W.tot;W.left=W.tot;W.run=true;W.started=true;W.last=-1}
+function startTimer(sec){W.tot=sec*1000;W.end=Date.now()+W.tot;W.left=W.tot;W.run=true;W.started=true;W.last=-1;W.pose=null}
 function togglePause(){if(!W)return;const n=Date.now();
   if(!W.paused){W.paused=true;W.el+=n-W.t0;if(W.run)W.left=Math.max(0,W.end-n);SND.pause()}else{W.paused=false;W.t0=n;if(W.run)W.end=n+W.left;SND.resume()}buzz(8);woDraw()}
 function plus15(){if(!W||!W.run)return;W.tot+=15000;if(W.paused)W.left+=15000;else W.end+=15000;SND.tap();woTick()}
@@ -1209,6 +1217,8 @@ function woTick(){if(!W)return;const n=Date.now(),el=W.el+(W.paused?0:n-W.t0),c=
   if(!W.run||W.paused)return;const left=Math.max(0,W.end-n),sec=Math.ceil(left/1000),rn=$('#rn'),rc=$('#rc');
   if(rn)rn.textContent=mmss(left/1000);if(rc)rc.style.strokeDashoffset=(RING*(1-left/W.tot)).toFixed(1);
   if(sec!==W.last&&sec<=3&&sec>0)SND.count();W.last=sec;
+  const cx=W.EX[W.i];if(W.ph==='work'&&cx&&cx.plan){const s=seqAt(cx,(W.tot-left)/1000),tag=s.i+'|'+s.half;
+    if(W.pose!==tag){const first=W.pose==null;W.pose=tag;const b=$('#poseBox');if(b)b.innerHTML=poseHtml(cx,(W.tot-left)/1000);if(!first&&left>1500){SND.beep();buzz([20,40,20])}}}
   if(left<=0){W.run=false;SND.beep();buzz([15,30,15]);if(W.ph==='rest'){W.ph='work';W.started=false;woDraw()}else finishSet()}}
 function ringHtml(val,color){return `<div class="rest"><svg viewBox="0 0 220 220"><circle cx="110" cy="110" r="100" stroke="#ffffff1a"/><circle id="rc" cx="110" cy="110" r="100" stroke="${color}" stroke-dasharray="${RING}" stroke-dashoffset="${W.run?(RING*(1-(W.paused?W.left:Math.max(0,W.end-Date.now()))/W.tot)).toFixed(1):0}"/></svg><span class="num" id="rn">${val}</span></div>`}
 function woDraw(){if(!W)return;const EX=W.EX;
@@ -1228,7 +1238,8 @@ function woDraw(){if(!W)return;const EX=W.EX;
   const sub=`<p>${esc([x.pre,x.note].filter(Boolean).join(' · ')||x.tip)}</p>`,skip=`<button class="sec2" id="woSkip">Пропустить</button>`,how=pic||TECH[Object.keys(TECH).find(k=>x.e.n.startsWith(k))]?'<button class="sec2" id="woHow">Как делать</button>':'';
   const bindCommon=()=>{const s=$('#woSkip');if(s)s.onclick=()=>{SND.tap();nextEx()&&woDraw()};const h=$('#woHow');if(h)h.onclick=()=>howSheet(x)};
   if(x.sec){const val=W.started?mmss((W.paused?W.left:W.end-Date.now())/1000):mmss(x.sec);
-    $('#woBody').innerHTML=`<small>${W.paused?'Пауза':x.sets>1?'Подход '+W.set:'Начни'}</small><h2>${esc(x.n)}</h2>${ringHtml(val,cv('--acc'))}${sub}`;
+    const el0=W.started?(W.tot-(W.paused?W.left:Math.max(0,W.end-Date.now())))/1000:0;
+    $('#woBody').innerHTML=`<small>${W.paused?'Пауза':x.sets>1?'Подход '+W.set:x.plan?(W.started?'Держи позу':x.plan.length+' поз · подскажу, когда менять'):'Начни'}</small><h2>${esc(x.n)}</h2>${ringHtml(val,cv('--acc'))}${x.plan?`<div id="poseBox">${poseHtml(x,el0)}</div>`:sub}`;if(x.plan)W.pose=null;
     $('#woActs').innerHTML=W.started?`<div class="wrow"><button class="wbtn" id="wPause">${pp}</button><button class="wbtn" id="wPlus">+15 с</button></div><button class="wbtn pri" id="wDone">Готово</button>`
       :`<button class="wbtn pri big" id="wStart">Старт · ${mmss(x.sec)}</button><div class="wrow">${how||''}${skip}</div>`;
     if(W.started){$('#wPause').onclick=togglePause;$('#wPlus').onclick=plus15;$('#wDone').onclick=()=>{click();finishSet()}}
@@ -1236,7 +1247,7 @@ function woDraw(){if(!W)return;const EX=W.EX;
   $('#woBody').innerHTML=`<small>${W.paused?'Пауза':x.sets>1?'Подход '+W.set:'Начни'}</small><h2>${esc(x.n)}</h2>${x.reps?`<span class="num big">${x.reps}</span><p>повторов${x.pre?' · '+esc(x.pre):''}${x.note?' · '+esc(x.note):''}</p>`:sub}`;
   $('#woActs').innerHTML=`<button class="hold" id="woHold"><i></i><span>Удерживай — ${x.reps?'сделал':'готово'}</span></button><div class="wrow">${how||''}${skip}</div>`;
   bindHold($('#woHold'),()=>{const r=$('#woHold').getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,0,['#ffffff']);click();if(W.paused)togglePause();setTimeout(finishSet,300)});bindCommon()}
-function howSheet(x){const t=tech(x.e.n)||[];openSheet(`<h2>${esc(x.n)}</h2><p>${esc(dose(x.e,cur)||'')}</p>${picHtml(x.e.n)}<ol class="steps">${t.map(s=>`<li>${esc(s)}</li>`).join('')}</ol><button class="close" data-close>Понятно</button>`,1)}
+function howSheet(x){const t=tech(x.e.n)||[],q=seqList(x.e.n);openSheet(`<h2>${esc(x.n)}</h2><p>${esc(dose(x.e,cur)||'')}</p>${picHtml(x.e.n)}${q?`<p class="muted">${esc(t.slice(1).join('. '))}</p>${q}`:`<ol class="steps">${t.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>`}<button class="close" data-close>Понятно</button>`,1)}
 
 /* --- навигация --- */
 const ORDER=['today','food','prog','ach','me','plan'];let scr='today';
@@ -1291,6 +1302,44 @@ document.addEventListener('submit',e=>{const f=e.target;
     (k==='x'?S.plan.days[planDay]:k==='m'?S.plan.meals:S.plan.habits).push(X(nm,d));changed();SND.done();const inp=document.querySelector(`form[data-add="${k}"] input`);if(inp)inp.focus();return}
   if(f.dataset.rec)setTimeout(closeSheet,50)},true);
 (()=>{let h='';for(let i=0;i<26;i++){const l=Math.random()*100,len=8+Math.random()*8,d=(.55+Math.random()*.45).toFixed(2),dl=(-Math.random()*2).toFixed(2),o=(.35+Math.random()*.5).toFixed(2);h+=`<b style="left:${l.toFixed(1)}%;height:${len.toFixed(0)}px;animation-duration:${d}s;animation-delay:${dl}s;opacity:${o}"></b>`}$('#rain').innerHTML=h})();
+
+/* --- понятные объяснения и пошаговые разминка/растяжка --- */
+Object.assign(TECH,{
+ 'Разминка':['Разминка идёт по шагам — таймер сам подскажет, что делать дальше','Сначала суставы сверху вниз: шея, плечи, руки, таз, колени, стопы','В конце — ходьба на месте до конца таймера','Цель — разогреться, а не устать'],
+ 'Приседания':['Встань: ноги на ширине плеч, носки чуть в стороны','Отводи таз назад и вниз, будто садишься на стул. Руки можно вытянуть вперёд для равновесия','Опустись, насколько получается без боли, и встань','Пятки всё время на полу, спина ровная, колени смотрят туда же, куда носки','Легче: «к стулу» — коснись стула ягодицами и сразу вставай','Ошибка: колени заваливаются внутрь'],
+ 'Отжимания':['Упрись ладонями чуть шире плеч. Тело — прямая палка от головы до пяток','Сгибай руки и опускайся, пока грудь почти не коснётся опоры. Локти идут назад-в стороны, не в стороны полностью','Выпрямь руки и вернись наверх','Чем выше опора, тем легче: стена → стол → колени на полу → обычные','Ошибка: поясница провисает или таз торчит вверх'],
+ 'Ягодичный мост':['Ляг на спину, ноги согни, стопы на полу близко к ягодицам, руки вдоль тела','Упрись пятками и подними таз вверх, сжимая ягодицы','Наверху колени, таз и плечи на одной линии — задержись на 1 секунду','Медленно опусти таз почти до пола и повтори','Ошибка: выгибать поясницу вместо того, чтобы сжимать ягодицы'],
+ 'Планка':['Встань на локти и носки: локти под плечами, тело прямое','Напряги живот и ягодицы, будто ждёшь удара в живот. Дыши ровно, не задерживай дыхание','Смотри в пол, шея продолжает спину','Легче: на коленях — прямая линия от головы до колен','Ошибка: таз провис или задран вверх'],
+ 'Выпады назад':['Встань прямо у стены или стула, держись рукой','Сделай большой шаг одной ногой назад и опустись вниз: оба колена согнуты примерно под прямым углом','Заднее колено почти касается пола, корпус прямо','Оттолкнись передней ногой и вернись. Повтори на другую ногу','Ошибка: заваливаться вперёд или опускаться на носок передней ноги'],
+ 'Птица-собака':['Встань на четвереньки: ладони под плечами, колени под тазом','Одновременно вытяни вперёд правую руку и назад левую ногу — в одну линию со спиной','Задержись на 2 секунды и вернись. Потом левая рука и правая нога','Спина ровная, как стол — на неё можно было бы поставить стакан','Ошибка: спешка и раскачивание корпуса'],
+ 'Супермен':['Ляг на живот, руки вытяни вперёд','Одновременно приподними руки, грудь и ноги на 5–10 см от пола','Задержись на 2 секунды и медленно опустись','Смотри в пол, шею не задирай','Легче: поднимай по очереди — только руки, потом только ноги'],
+ 'Подъёмы на носки':['Встань прямо у стены, держись рукой для равновесия','Поднимись на носки как можно выше','Задержись на секунду и медленно опустись на пятки','Сложнее: стоя носками на краю ступеньки, пятки опускаются ниже'],
+ 'Скручивания лёжа':['Ляг на спину, ноги согни, стопы на полу, пальцы у висков','На выдохе оторви от пола голову и лопатки — поясница остаётся на полу','Медленно опустись и повтори','Не тяни голову руками: между подбородком и грудью помещается кулак'],
+ 'Растяжка':['Растяжка идёт по позам — таймер подскажет, когда менять позу, ногу или руку','Тянется плавно, без рывков и пружинок','Должно тянуть, но не болеть. Дыши медленно и глубоко'],
+ 'Быстрая ходьба':['Иди в темпе, при котором можешь говорить, но петь уже трудно','Руки сгибай в локтях и работай ими, шаг широкий','Дома — ходьба на месте с высоким подъёмом колен или по квартире'],
+ 'Прогулка':['Спокойный темп, лучше на улице','Можно разбить на две части','Хорошее время без телефона']});
+// позы: [название, как делать, секунд (0 = до конца таймера), подсказка на середине]
+const SEQ={
+ 'Разминка':[['Шея','Медленно наклоняй голову вперёд и назад, потом к плечам, потом поворачивай влево-вправо. По 5 раз',30],
+  ['Плечи','Руки опущены. Круги плечами: 10 раз вперёд, потом 10 назад',30],
+  ['Руки','Руки в стороны. Круги в локтях, потом вращения кистями — по 10 раз в каждую сторону',30],
+  ['Таз','Руки на пояс, ноги на ширине плеч. Крути тазом, как хула-хуп: по 10 кругов в каждую сторону',30],
+  ['Колени','Ноги вместе, чуть присядь, ладони на колени. Круги коленями: по 10 в каждую сторону',30],
+  ['Стопы','Держись за стену, встань на одну ногу, а носком другой рисуй круги. Потом другая нога',30,'Смени ногу'],
+  ['Ходьба на месте','Шагай на месте, поднимая колени повыше, руки работают — до конца таймера',0]],
+ 'Растяжка':[['Передняя часть бедра','Встань у стены, держись рукой. Согни ногу назад, возьми стопу рукой и подтяни пятку к ягодице. Колени рядом, спина прямая',60,'Смени ногу'],
+  ['Задняя часть бедра','Сядь на пол. Одну ногу вытяни, другую согни — стопа у колена прямой ноги. Спина ровная, тянись грудью к прямой ноге, пока не потянет под коленом',60,'Смени ногу'],
+  ['Ягодицы','Ляг на спину, ноги согни. Положи лодыжку одной ноги на колено другой — получится цифра 4. Обхвати руками нижнее бедро и подтяни к груди',60,'Смени ногу'],
+  ['Грудь','Встань в дверном проёме. Согнутую руку положи предплечьем на косяк, локоть на уровне плеча. Шагни вперёд и чуть разверни корпус от руки',60,'Смени руку'],
+  ['Плечо','Прямую руку положи поперёк груди. Другой рукой прижми её у локтя к себе',40,'Смени руку'],
+  ['Спина','Встань на колени и сядь на пятки. Наклонись вперёд: руки вытянуты по полу, лоб опущен. Дыши медленно',30]]};
+const seqOf=n=>SEQ[Object.keys(SEQ).find(k=>n.startsWith(k))];
+function seqPlan(seq,total){const fixed=seq.reduce((a,p)=>a+p[2],0),fill=seq.some(p=>!p[2]),k=fill?1:total/fixed;let t=0;
+  return seq.map(p=>{const d=p[2]?p[2]*k:Math.max(30,total-fixed);const o={n:p[0],how:p[1],side:p[3],from:t,d};t+=d;return o})}
+function seqAt(x,el){const P=x.plan;let i=P.findIndex(p=>el<p.from+p.d);if(i<0)i=P.length-1;const p=P[i];return{i,p,half:!!p.side&&el>=p.from+p.d/2,left:p.from+p.d-el}}
+function poseHtml(x,el){const s=seqAt(x,el),P=x.plan;
+  return `<div class="pose"><small>Поза ${s.i+1} из ${P.length}${s.p.side?` · <b class="${s.half?'sw':''}">${s.half?s.p.side:'Первая сторона'}</b>`:''}</small><b>${esc(s.p.n)}</b><p>${esc(s.p.how)}</p></div>`}
+function seqList(n){const s=seqOf(n);return s?`<ol class="steps">${s.map(p=>`<li><b>${esc(p[0])}.</b> ${esc(p[1])}${p[3]?' — на каждую сторону':''}</li>`).join('')}</ol>`:''}
 
 /* --- формы профиля и рекордов, уровни --- */
 document.addEventListener('submit',e=>{
@@ -1383,7 +1432,7 @@ setInterval(()=>{const t=TODAY();if(t!==lastToday){if(cur===lastToday)cur=t;last
 
 }
 </script>
-<script>window.FORMA_V=25;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+<script>window.FORMA_V=26;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 function formaCheck(){fetch("version.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=parseInt(v);if(!(v>window.FORMA_V)||document.querySelector(".upd"))return;
   const b=document.createElement("div");b.className="upd";b.innerHTML='<span>Есть обновление</span><button class="btn">Обновить</button>';
   b.querySelector("button").onclick=async()=>{try{for(const k of await caches.keys())await (await caches.open(k)).delete("index.html")}catch(e){}location.reload()};document.body.appendChild(b)}).catch(()=>{})}
