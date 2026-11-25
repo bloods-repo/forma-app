@@ -350,6 +350,8 @@ details.card[open]>summary{margin-bottom:12px}
 .grp button{gap:12px}.grp button span{flex:none}
 .it,.hd .who,.tile,.hb,.hold{-webkit-user-select:none;user-select:none}
 
+.now .hint{color:var(--acc);font-weight:700;font-size:14px;margin-top:-4px}
+
 .toast{white-space:normal;max-width:calc(100% - 32px);width:max-content;text-align:center;pointer-events:none}
 
 </style>
@@ -738,7 +740,7 @@ function xpTotal(){let x=0;const g=stepsGoal();
 const need=n=>50*n*(n-1);
 function lvl(x){let n=1;while(x>=need(n+1))n++;return{n,cur:x-need(n),span:need(n+1)-need(n),name:n<=LVN.length?LVN[n-1]:LVN[LVN.length-1]+' '+(n-LVN.length+1)}}
 /* ================= НОВЫЙ ИНТЕРФЕЙС ================= */
-const APPV=23;
+const APPV=24;
 const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const buzz=v=>{try{navigator.vibrate&&navigator.vibrate(v)}catch(e){}};
@@ -747,6 +749,10 @@ const clock=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+
 const plural=(n,a,b,c)=>{n=Math.abs(n);const m=n%10,h=n%100;return m===1&&h!==11?a:m>=2&&m<=4&&(h<12||h>14)?b:c};
 const dfmt=k=>{const d=parse(k);return d.getDate()+' '+MN[d.getMonth()]};
 const comma=v=>String(v).replace('.',',');
+const hhmm=m=>{m=((Math.round(m)%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
+const dur=m=>{m=Math.round(Math.abs(m));return m>=60?Math.floor(m/60)+' ч'+(m%60?' '+m%60+' мин':''):m+' мин'};
+// фактическое время отметки (только для сегодняшнего дня)
+function stamp(l,id,on){if(cur!==TODAY())return;l.at=l.at||{};if(on)l.at[id]=nowRel();else delete l.at[id]}
 
 /* --- цвета --- */
 const PALS=[['Коралл','#ff7a59','#ffb35c','#5ee6a8','#1a0d06','#0b0d12'],['Океан','#2f9bff','#6fe3ff','#5ee6a8','#03121f','#0a0e16'],['Ультрафиолет','#8b5cff','#e05cff','#5ee6a8','#ffffff','#0c0a16'],['Ягода','#ff4d8d','#ff9f6b','#5ee6a8','#22030f','#110a10'],['Лайм','#c6f432','#5ee6a8','#c6f432','#141c00','#0a0d09'],['Золото','#ffc23d','#ff8a3d','#5ee6a8','#1f1400','#100d08'],['Монохром','#f3f4f8','#9aa0b4','#f3f4f8','#0b0b0c','#0b0b0c']];
@@ -819,7 +825,7 @@ function woInfo(k){const ex=S.plan.days[parse(k).getDay()]||[];let sec=0,sets=0;
   ex.forEach(e=>{const d=pdose(dose(e,k));const n=Math.max(1,d.sets);sets+=n;sec+=n*(d.sec||45)});sec+=Math.max(0,sets-ex.length)*REST()+Math.max(0,ex.length-1)*30;
   return{ex,min:Math.max(5,Math.round(sec/300)*5),names:ex.map(e=>e.n.split(':')[0])}}
 function TASKS(k){const sc=SCHED(k),l=Lr(k),n=NUT(),sh=mealShares(),sn=l.sn||{};
-  return sc.filter(it=>it.kind!=='info').map(it=>{const t={id:it.kind==='wo'?'wo':it.id,kind:it.kind,t:Math.round(it.m),n:it.n};
+  const all=sc.filter(it=>it.kind!=='info').map(it=>{const t={id:it.kind==='wo'?'wo':it.id,kind:it.kind,t:Math.round(it.m),n:it.n};
     if(sn[t.id]&&k===TODAY())t.t=Math.max(t.t,sn[t.id]);
     if(it.kind==='meal'){const e=S.plan.meals.find(x=>x.id===it.id);t.kcal=n?Math.round(n.kcal*sh[it.id]/10)*10:null;t.p=n?Math.round(n.prot*sh[it.id]):null;
       t.s=n?`≈${fmtN(t.kcal)} ккал · ${plate(n,sh[it.id])}`:(e&&e.d||'');t.c='#ff9e6b';t.done=!!l.m[it.id];t.ico='Е'}
@@ -827,11 +833,22 @@ function TASKS(k){const sc=SCHED(k),l=Lr(k),n=NUT(),sh=mealShares(),sn=l.sn||{};
       t.s=(dn&&dn<w.ex.length?`Сделано ${dn} из ${w.ex.length} · `:'')+(w.ex.length>2?`${w.ex.length} ${plural(w.ex.length,'упражнение','упражнения','упражнений')} · ~${w.min} мин`:`~${w.min} мин`);
       t.c='var(--acc)';t.done=woAllDone(k);t.ico='▶';t.w=w;t.dn=dn}
     else{t.s=TIP[it.id]||'';t.c=it.id==='wake'?'#ffd27a':'#9d8cff';t.done=!!(l.sc&&l.sc[it.id]);t.ico=it.id==='wake'?'☀':'☾'}
-    return t}).sort((a,b)=>a.t-b.t)}
+    t.plan=t.t;const at=l.at&&l.at[t.id];
+    if(t.done&&at!=null){t.t=at;t.at=at;const d=at-t.plan;if(Math.abs(d)>=15)t.s=(d<0?'раньше плана на ':'позже плана на ')+dur(d)+' · '+t.s}
+    return t}).sort((a,b)=>a.t-b.t);
+  woHint(k,all);return all}
+// ел раньше или позже плана — подсказать, когда тренироваться
+function woHint(k,all){const w=all.find(x=>x.kind==='wo');if(!w||w.done||k!==TODAY())return;
+  const prev=all.filter(x=>x.kind==='meal'&&x.plan<w.plan).sort((a,b)=>b.plan-a.plan)[0];if(!prev||!prev.done||prev.at==null)return;
+  const e=S.plan.meals.find(m=>m.id===prev.id),strong=w.w.ex.length>2,big=(MW[e&&e.n]??.5)>=1,gap=big?(strong?120:60):(strong?45:20);
+  const from=prev.at+gap,n=nowRel();if(Math.abs(from-w.plan)<15)return;
+  if(from<w.plan)w.hint=from<=n?`Поел раньше — можно начинать уже сейчас`:`Поел раньше — можно начать с ${hhmm(from)}`;
+  else w.hint=`Поел позже — лучше начать не раньше ${hhmm(from)}`;
+  w.s=w.hint+' · '+w.s}
 function toggleTask(x,el){act(el,()=>{const l=L(cur);
-  if(x.kind==='meal'){l.m[x.id]?delete l.m[x.id]:l.m[x.id]=1}
-  else if(x.kind==='wo'){const ex=S.plan.days[parse(cur).getDay()]||[],all=ex.every(e=>l.x[e.id]);ex.forEach(e=>all?delete l.x[e.id]:l.x[e.id]=1)}
-  else{l.sc=l.sc||{};if(l.sc[x.id])delete l.sc[x.id];else{l.sc[x.id]=1;if(x.id==='wake'&&!l.w){l.w=1;setTimeout(()=>toast('Плюс 1 стакан воды'),200)}}}},true)}
+  if(x.kind==='meal'){l.m[x.id]?delete l.m[x.id]:l.m[x.id]=1;stamp(l,x.id,!!l.m[x.id])}
+  else if(x.kind==='wo'){const ex=S.plan.days[parse(cur).getDay()]||[],all=ex.every(e=>l.x[e.id]);ex.forEach(e=>all?delete l.x[e.id]:l.x[e.id]=1);stamp(l,'wo',!all)}
+  else{l.sc=l.sc||{};if(l.sc[x.id])delete l.sc[x.id];else{l.sc[x.id]=1;if(x.id==='wake'&&!l.w){l.w=1;setTimeout(()=>toast('Плюс 1 стакан воды'),200)}}stamp(l,x.id,!!l.sc[x.id])}},true)}
 
 /* --- небо и погода --- */
 const WXN={clear:'ясно',partly:'переменная облачность',cloudy:'облачно',fog:'туман',rain:'дождь',snow:'снег',storm:'гроза'};
@@ -884,7 +901,7 @@ function nowCard(anim,tasks){const el=$('#now');
   const meta=x.kind==='meal'&&x.kcal?`<div class="meta"><div><b class="num">${fmtN(x.kcal)}</b><small>ккал</small></div><div><b class="num">${x.p} г</b><small>белка</small></div><div><b class="num">${half(x.p/25)}</b><small>ладони белка</small></div></div>`
     :x.kind==='wo'?`<div class="meta"><div><b class="num">${x.w.ex.length}</b><small>${plural(x.w.ex.length,'упражнение','упражнения','упражнений')}</small></div><div><b class="num">~${x.w.min}</b><small>минут</small></div><div><b class="num">${x.dn?x.dn+'/'+x.w.ex.length:'+'+(x.w.ex.length*10+30)}</b><small>${x.dn?'сделано':'XP'}</small></div></div>`:'<div style="height:16px"></div>';
   const desc=x.kind==='wo'?esc(x.w.names.slice(0,4).join(' · ')):esc(x.s);
-  el.innerHTML=`${tag}<h2>${esc(x.n)}</h2><p>${desc}</p>${meta}
+  el.innerHTML=`${tag}<h2>${esc(x.n)}</h2><p>${desc}</p>${x.hint?`<p class="hint">${esc(x.hint)}</p>`:''}${meta}
     ${x.kind==='wo'?`<button class="hold" id="startWo"><span>▶ ${x.dn?'Продолжить тренировку':'Начать тренировку'}</span></button>`:`<button class="hold" id="hold" aria-label="Удерживай, чтобы отметить"><i></i><span>Удерживай — готово</span></button>`}
     <div class="row2">${isT?'<button id="skip">Позже</button>':''}${x.kind==='meal'?'<button id="info">Рецепт</button>':x.kind==='wo'?'<button id="info">Программа</button>':''}${x.kind==='wo'?'<button id="woMark">Отметить</button>':''}</div>`;
   if(!$('#now .row2').children.length)$('#now .row2').remove();
@@ -901,7 +918,7 @@ function bindHold(h,fn){let tmr=null;const start=e=>{e.preventDefault();h.classL
 
 /* --- список «дальше» --- */
 function list(tasks){const f=focusTask(tasks),rest=tasks.filter(x=>x!==f);$('#listBox').hidden=!rest.length;
-  $('#list').innerHTML=rest.map(x=>`<div class="it${x.done?' isdone':''}" data-id="${esc(x.id)}"><div class="bgl">${x.done?'↺ Вернуть':'✓ Готово'}</div><div class="fg" tabindex="0"><span class="ico" data-tick="${esc(x.id)}" role="button" aria-label="Отметить: ${esc(x.n)}" style="background:color-mix(in srgb,${x.c} 14%,transparent);color:${x.c}">${x.done?'✓':x.ico}</span><span class="tx"><b>${esc(x.n)}</b><small>${esc(x.s)}</small></span><span class="tm">${hm(x.t)}</span></div></div>`).join('');
+  $('#list').innerHTML=rest.map(x=>`<div class="it${x.done?' isdone':''}" data-id="${esc(x.id)}"><div class="bgl">${x.done?'↺ Вернуть':'✓ Готово'}</div><div class="fg" tabindex="0"><span class="ico" data-tick="${esc(x.id)}" role="button" aria-label="Отметить: ${esc(x.n)}" style="background:color-mix(in srgb,${x.c} 14%,transparent);color:${x.c}">${x.done?'✓':x.ico}</span><span class="tx"><b>${esc(x.n)}</b><small>${esc(x.s)}</small></span><span class="tm">${x.at!=null?hhmm(x.t):hm(x.t)}</span></div></div>`).join('');
   document.querySelectorAll('#list .it').forEach(it=>bindSwipe(it,tasks))}
 function bindSwipe(it,tasks){const fg=it.querySelector('.fg'),x=tasks.find(t=>t.id===it.dataset.id);let x0=null,dx=0,y0=0,lock=null;
   fg.addEventListener('pointerdown',e=>{if(e.target.closest('[data-tick]'))return;x0=e.clientX;y0=e.clientY;dx=0;lock=null;try{fg.setPointerCapture(e.pointerId)}catch(_){}});
@@ -1180,7 +1197,7 @@ function startTimer(sec){W.tot=sec*1000;W.end=Date.now()+W.tot;W.left=W.tot;W.ru
 function togglePause(){if(!W)return;const n=Date.now();
   if(!W.paused){W.paused=true;W.el+=n-W.t0;if(W.run)W.left=Math.max(0,W.end-n);SND.pause()}else{W.paused=false;W.t0=n;if(W.run)W.end=n+W.left;SND.resume()}buzz(8);woDraw()}
 function plus15(){if(!W||!W.run)return;W.tot+=15000;if(W.paused)W.left+=15000;else W.end+=15000;SND.tap();woTick()}
-function markEx(x){const l=L(cur);if(!l.x[x.e.id]){l.x[x.e.id]=1;touch();checkBadges();checkLevel();persist()}x.done=true}
+function markEx(x){const l=L(cur);if(!l.x[x.e.id]){l.x[x.e.id]=1;if(woAllDone(cur))stamp(l,'wo',true);touch();checkBadges();checkLevel();persist()}x.done=true}
 function nextEx(){W.i++;W.set=1;W.run=false;W.started=false;if(W.i>=W.EX.length){W.ph='done';SND.big();woDraw();return false}return true}
 function finishSet(){const x=W.EX[W.i];W.run=false;W.started=false;
   if(W.set<x.sets){W.set++;startRest(REST());return}
@@ -1364,7 +1381,7 @@ setInterval(()=>{const t=TODAY();if(t!==lastToday){if(cur===lastToday)cur=t;last
 
 }
 </script>
-<script>window.FORMA_V=23;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+<script>window.FORMA_V=24;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 function formaCheck(){fetch("version.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=parseInt(v);if(!(v>window.FORMA_V)||document.querySelector(".upd"))return;
   const b=document.createElement("div");b.className="upd";b.innerHTML='<span>Есть обновление</span><button class="btn">Обновить</button>';
   b.querySelector("button").onclick=async()=>{try{for(const k of await caches.keys())await (await caches.open(k)).delete("index.html")}catch(e){}location.reload()};document.body.appendChild(b)}).catch(()=>{})}
