@@ -360,6 +360,12 @@ details.card[open]>summary{margin-bottom:12px}
 @keyframes swp{0%{transform:scale(.6);opacity:0}100%{transform:none;opacity:1}}
 .steps b{color:var(--ink)}
 
+/* окно по центру (утренний вопрос про сон) */
+.sheet.mid{bottom:auto;top:50%;width:min(420px,calc(100% - 28px));border-radius:28px;padding:22px 20px 18px;max-height:calc(100vh - 40px);overflow-y:auto;
+  transform:translate(-50%,-50%) scale(.88);opacity:0;transition:transform .4s var(--spring),opacity .25s,visibility 0s .4s;box-shadow:0 30px 80px #000a}
+.sheet.mid.on{transform:translate(-50%,-50%) scale(1);opacity:1;visibility:visible;transition:transform .4s var(--spring),opacity .25s}
+.sheet.mid h2{font-size:22px}.sheet.mid .close{margin-top:8px}
+
 .toast{white-space:normal;max-width:calc(100% - 32px);width:max-content;text-align:center;pointer-events:none}
 
 </style>
@@ -748,7 +754,7 @@ function xpTotal(){let x=0;const g=stepsGoal();
 const need=n=>50*n*(n-1);
 function lvl(x){let n=1;while(x>=need(n+1))n++;return{n,cur:x-need(n),span:need(n+1)-need(n),name:n<=LVN.length?LVN[n-1]:LVN[LVN.length-1]+' '+(n-LVN.length+1)}}
 /* ================= НОВЫЙ ИНТЕРФЕЙС ================= */
-const APPV=27;
+const APPV=28;
 const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const buzz=v=>{try{navigator.vibrate&&navigator.vibrate(v)}catch(e){}};
@@ -968,7 +974,7 @@ function renderToday(anim,pop){const tasks=TASKS(cur);sky();arc(pop,tasks);nowCa
 
 /* --- лист снизу --- */
 let sheetOn=false;
-function openSheet(html,left){const s=$('#sheet');s.className='sheet'+(left?' l':'');s.innerHTML='<div class="grab"></div>'+html;s.scrollTop=0;
+function openSheet(html,left,mid){const s=$('#sheet');s.className='sheet'+(left?' l':'')+(mid?' mid':'');s.innerHTML=(mid?'':'<div class="grab"></div>')+html;s.scrollTop=0;
   $('#sheetbg').classList.add('on');requestAnimationFrame(()=>s.classList.add('on'));sheetOn=true;SND.open();buzz(6);
   s.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheet)}
 function closeSheet(){if(!sheetOn)return;sheetOn=false;$('#sheetbg').classList.remove('on');$('#sheet').classList.remove('on');SND.close()}
@@ -981,7 +987,7 @@ function tileSheet(kind,ask){const l=Lr(cur);
     if(ask&&p&&!pb&&!pw){const[w0]=bounds(),n=nowRel();pb=p.sleep||'';pw=n>=w0-60&&n<=w0+180?hhmm(n):(p.wake||'')}
     openSheet(`<h2>${ask?(nowM()<720?'Доброе утро! Как спал?':'Как спал прошлой ночью?'):'Сон прошлой ночью'}</h2><p>${ask?'Проверь время — я подставил по распорядку и по тому, когда ты открыл приложение':slH(sl)!=null?fmtH(slH(sl)):'Когда лёг и когда встал'}</p><div class="fg"><label>Лёг<input type="time" id="slb" value="${esc(pb)}"></label><label>Встал<input type="time" id="slw" value="${esc(pw)}"></label></div>
       ${p&&p.sleep?`<button class="btn ghost" id="slplan">Как по распорядку: ${esc(p.sleep)} – ${esc(p.wake)}</button>`:''}
-      <h4>Как спалось</h4><div class="seg" style="grid-template-columns:repeat(3,minmax(0,1fr))">${['Плохо','Нормально','Отлично'].map((t,i)=>`<button data-slq="${i+1}" class="${sl.q===i+1?'on':''}">${t}</button>`).join('')}</div><button class="btn" id="shOk">Сохранить</button>${ask?'<button class="close" data-close>Пропустить</button>':''}`,1);
+      <h4>Как спалось</h4><div class="seg" style="grid-template-columns:repeat(3,minmax(0,1fr))">${['Плохо','Нормально','Отлично'].map((t,i)=>`<button data-slq="${i+1}" class="${sl.q===i+1?'on':''}">${t}</button>`).join('')}</div><button class="btn" id="shOk">Сохранить</button>${ask?'<button class="close" data-close>Пропустить</button>':''}`,1,ask);
     const sp=$('#slplan');if(sp)sp.onclick=()=>{$('#slb').value=p.sleep;$('#slw').value=p.wake;SND.tap()};
     $('#sheet').querySelectorAll('[data-slq]').forEach(b=>b.onclick=()=>{$('#sheet').querySelectorAll('[data-slq]').forEach(x=>x.classList.toggle('on',x===b));SND.tap()});
     $('#shOk').onclick=()=>{const q=$('#sheet [data-slq].on');act($('#shOk'),()=>{const x=L(cur);x.sl=Object.assign({},x.sl,{b:$('#slb').value,w:$('#slw').value},q?{q:+q.dataset.slq}:{});autoHabit(cur)},true);closeSheet();renderToday()}}}
@@ -1440,7 +1446,7 @@ setInterval(()=>{const t=TODAY();if(t!==lastToday){if(cur===lastToday)cur=t;last
 
 }
 </script>
-<script>window.FORMA_V=27;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+<script>window.FORMA_V=28;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 function formaCheck(){fetch("version.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=parseInt(v);if(!(v>window.FORMA_V)||document.querySelector(".upd"))return;
   const b=document.createElement("div");b.className="upd";b.innerHTML='<span>Есть обновление</span><button class="btn">Обновить</button>';
   b.querySelector("button").onclick=async()=>{try{for(const k of await caches.keys())await (await caches.open(k)).delete("index.html")}catch(e){}location.reload()};document.body.appendChild(b)}).catch(()=>{})}
