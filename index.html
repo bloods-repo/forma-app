@@ -748,7 +748,7 @@ function xpTotal(){let x=0;const g=stepsGoal();
 const need=n=>50*n*(n-1);
 function lvl(x){let n=1;while(x>=need(n+1))n++;return{n,cur:x-need(n),span:need(n+1)-need(n),name:n<=LVN.length?LVN[n-1]:LVN[LVN.length-1]+' '+(n-LVN.length+1)}}
 /* ================= НОВЫЙ ИНТЕРФЕЙС ================= */
-const APPV=26;
+const APPV=27;
 const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const buzz=v=>{try{navigator.vibrate&&navigator.vibrate(v)}catch(e){}};
@@ -856,7 +856,13 @@ function woHint(k,all){const w=all.find(x=>x.kind==='wo');if(!w||w.done||k!==TOD
 function toggleTask(x,el){act(el,()=>{const l=L(cur);
   if(x.kind==='meal'){l.m[x.id]?delete l.m[x.id]:l.m[x.id]=1;stamp(l,x.id,!!l.m[x.id])}
   else if(x.kind==='wo'){const ex=S.plan.days[parse(cur).getDay()]||[],all=ex.every(e=>l.x[e.id]);ex.forEach(e=>all?delete l.x[e.id]:l.x[e.id]=1);stamp(l,'wo',!all)}
-  else{l.sc=l.sc||{};if(l.sc[x.id])delete l.sc[x.id];else{l.sc[x.id]=1;if(x.id==='wake'&&!l.w){l.w=1;setTimeout(()=>toast('Плюс 1 стакан воды'),200)}}stamp(l,x.id,!!l.sc[x.id])}},true)}
+  else{l.sc=l.sc||{};if(l.sc[x.id])delete l.sc[x.id];else{l.sc[x.id]=1;if(x.id==='wake'&&!l.w){l.w=1;setTimeout(()=>toast('Плюс 1 стакан воды'),200)}}stamp(l,x.id,!!l.sc[x.id])}},true);
+  if(x.id==='wake'&&!x.done&&cur===TODAY()){const ls=Lr(cur);if(!(ls.sl&&(ls.sl.b||ls.sl.w)))setTimeout(()=>{if(!sheetOn&&!W){markAsked();tileSheet('sleep',1)}},900)}}
+// в начале дня — спросить, как спал (один раз в день)
+const markAsked=()=>{try{localStorage.setItem('fd-slask',TODAY())}catch(e){}};
+function askSleep(){if(!S.prof||cur!==TODAY()||W||sheetOn||document.visibilityState==='hidden')return;const l=Lr(TODAY());if(l.sl&&(l.sl.b||l.sl.w))return;
+  let a='';try{a=localStorage.getItem('fd-slask')||''}catch(e){}if(a===TODAY())return;const[w0]=bounds();if(nowRel()<w0-60)return;
+  markAsked();if(scr!=='today')go('today');tileSheet('sleep',1)}
 
 /* --- небо и погода --- */
 const WXN={clear:'ясно',partly:'переменная облачность',cloudy:'облачно',fog:'туман',rain:'дождь',snow:'снег',storm:'гроза'};
@@ -966,15 +972,16 @@ function openSheet(html,left){const s=$('#sheet');s.className='sheet'+(left?' l'
   $('#sheetbg').classList.add('on');requestAnimationFrame(()=>s.classList.add('on'));sheetOn=true;SND.open();buzz(6);
   s.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheet)}
 function closeSheet(){if(!sheetOn)return;sheetOn=false;$('#sheetbg').classList.remove('on');$('#sheet').classList.remove('on');SND.close()}
-function tileSheet(kind){const l=Lr(cur);
+function tileSheet(kind,ask){const l=Lr(cur);
   if(kind==='steps'){openSheet(`<h2>Шаги</h2><p>Цель — ${fmtN(stepsGoal())} в день</p><input type="number" id="shSteps" inputmode="numeric" min="0" step="100" placeholder="например, 6500" value="${+l.st||''}" aria-label="Шаги за день"><button class="btn" id="shOk">Сохранить</button>`,1);
     $('#shOk').onclick=()=>{act($('#shOk'),()=>{const x=L(cur);x.st=Math.max(0,parseInt($('#shSteps').value)||0);autoHabit(cur)},true);closeSheet();renderToday()};return}
   if(kind==='kg'){openSheet(`<h2>Вес</h2><p>Взвешивайся утром, до еды — так честнее</p><input type="number" id="shKg" inputmode="decimal" step="0.1" placeholder="72,4" value="${esc(l.kg)}" aria-label="Вес в кг"><button class="btn" id="shOk">Сохранить</button>`,1);
     $('#shOk').onclick=()=>{L(cur).kg=$('#shKg').value.trim().replace(',','.');changed();closeSheet();toast('Вес записан')};return}
-  if(kind==='sleep'){const sl=l.sl||{},p=S.prof;
-    openSheet(`<h2>Сон прошлой ночью</h2><p>${slH(sl)!=null?fmtH(slH(sl)):'Когда лёг и когда встал'}</p><div class="fg"><label>Лёг<input type="time" id="slb" value="${esc(sl.b||'')}"></label><label>Встал<input type="time" id="slw" value="${esc(sl.w||'')}"></label></div>
+  if(kind==='sleep'){const sl=l.sl||{},p=S.prof;let pb=sl.b||'',pw=sl.w||'';
+    if(ask&&p&&!pb&&!pw){const[w0]=bounds(),n=nowRel();pb=p.sleep||'';pw=n>=w0-60&&n<=w0+180?hhmm(n):(p.wake||'')}
+    openSheet(`<h2>${ask?(nowM()<720?'Доброе утро! Как спал?':'Как спал прошлой ночью?'):'Сон прошлой ночью'}</h2><p>${ask?'Проверь время — я подставил по распорядку и по тому, когда ты открыл приложение':slH(sl)!=null?fmtH(slH(sl)):'Когда лёг и когда встал'}</p><div class="fg"><label>Лёг<input type="time" id="slb" value="${esc(pb)}"></label><label>Встал<input type="time" id="slw" value="${esc(pw)}"></label></div>
       ${p&&p.sleep?`<button class="btn ghost" id="slplan">Как по распорядку: ${esc(p.sleep)} – ${esc(p.wake)}</button>`:''}
-      <h4>Как спалось</h4><div class="seg" style="grid-template-columns:repeat(3,minmax(0,1fr))">${['Плохо','Нормально','Отлично'].map((t,i)=>`<button data-slq="${i+1}" class="${sl.q===i+1?'on':''}">${t}</button>`).join('')}</div><button class="btn" id="shOk">Сохранить</button>`,1);
+      <h4>Как спалось</h4><div class="seg" style="grid-template-columns:repeat(3,minmax(0,1fr))">${['Плохо','Нормально','Отлично'].map((t,i)=>`<button data-slq="${i+1}" class="${sl.q===i+1?'on':''}">${t}</button>`).join('')}</div><button class="btn" id="shOk">Сохранить</button>${ask?'<button class="close" data-close>Пропустить</button>':''}`,1);
     const sp=$('#slplan');if(sp)sp.onclick=()=>{$('#slb').value=p.sleep;$('#slw').value=p.wake;SND.tap()};
     $('#sheet').querySelectorAll('[data-slq]').forEach(b=>b.onclick=()=>{$('#sheet').querySelectorAll('[data-slq]').forEach(x=>x.classList.toggle('on',x===b));SND.tap()});
     $('#shOk').onclick=()=>{const q=$('#sheet [data-slq].on');act($('#shOk'),()=>{const x=L(cur);x.sl=Object.assign({},x.sl,{b:$('#slb').value,w:$('#slw').value},q?{q:+q.dataset.slq}:{});autoHabit(cur)},true);closeSheet();renderToday()}}}
@@ -1427,12 +1434,13 @@ setInterval(()=>{if(document.visibilityState==='visible')syncNow()},120000);
 let lastToday=TODAY();
 render();
 if(SV())syncNow();
+setTimeout(askSleep,1200);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(askSleep,700)});
 fetchWx();setInterval(fetchWx,30*60e3);
-setInterval(()=>{const t=TODAY();if(t!==lastToday){if(cur===lastToday)cur=t;lastToday=t}if(scr==='today'&&!W&&!sheetOn)renderToday()},60000);
+setInterval(()=>{const t=TODAY();if(t!==lastToday){if(cur===lastToday)cur=t;lastToday=t}if(scr==='today'&&!W&&!sheetOn){renderToday();askSleep()}},60000);
 
 }
 </script>
-<script>window.FORMA_V=26;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+<script>window.FORMA_V=27;if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 function formaCheck(){fetch("version.txt?"+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(v=>{v=parseInt(v);if(!(v>window.FORMA_V)||document.querySelector(".upd"))return;
   const b=document.createElement("div");b.className="upd";b.innerHTML='<span>Есть обновление</span><button class="btn">Обновить</button>';
   b.querySelector("button").onclick=async()=>{try{for(const k of await caches.keys())await (await caches.open(k)).delete("index.html")}catch(e){}location.reload()};document.body.appendChild(b)}).catch(()=>{})}
